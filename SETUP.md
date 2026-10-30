@@ -108,7 +108,28 @@ EOF
 
 A non-zero count means S3 access, DuckDB and the release string are all good.
 
-## 7. Start Claude Code
+## 7. Preview the map locally
+
+The map reads `.pmtiles` files with HTTP Range requests (it fetches small byte ranges, not the whole
+file). Python's built-in `python -m http.server` does not support them, so use RangeHTTPServer
+(installed by `environment.yml`):
+
+```bash
+cd docs
+python -m RangeHTTPServer 8000     # then open http://localhost:8000 in a Windows browser
+```
+
+Stop it with `Ctrl+C`. It has no `--directory` option, so run it from inside `docs/`. WSL forwards
+`localhost:8000` to Windows automatically. Nothing to test until Phase 3 produces `docs/index.html`.
+
+If the environment was created before RangeHTTPServer was added:
+
+```bash
+conda env update -f environment.yml --prune
+python -c "import RangeHTTPServer; print('ok')"
+```
+
+## 8. Start Claude Code
 
 ```bash
 claude            # in the repo root; it reads CLAUDE.md

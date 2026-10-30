@@ -69,6 +69,9 @@ python -m ipykernel install --user --name urban-access
 - GDAL/ogr2ogr and tippecanoe come **from the conda env** (`which ogr2ogr` must point inside
   `.../envs/urban-access/`). Don't call Windows-side tools or the Anaconda3 base GDAL.
 - tippecanoe ≥ 2.17 writes `.pmtiles` directly; no separate `pmtiles` CLI is required.
+- Local map preview: `rangehttpserver` (pip, in `environment.yml`) → `cd docs && python -m RangeHTTPServer 8000`.
+  It has no `--directory` option, so it must run from inside `docs/`. The web page reads only static files
+  (PMTiles + JSON); no database driver or app server is involved at view time.
 - pgAdmin / QGIS on Windows connect to `localhost:5436` and open project files at `C:\dev\PortfolioProject4\Urban_Accessibility\...`.
 - The repo is on the Windows drive (`/mnt/c`), which is slower for many small files than the Linux
   filesystem. Fine at Carson City scale; if a large city makes I/O a bottleneck, `data_dir` in config
@@ -230,7 +233,9 @@ low access. Every finding quoted in the README must come from a notebook cell.
 - Sorted bar chart of block groups by score, linked to the map (hover/click highlights).
 - Toggleable service-point layer by type. Basemap: free, no API key (TBD-PLAN: OpenFreeMap vs Protomaps).
 - Attribution for Overture (ODbL/CDLA per theme), OSM-derived data, Census, basemap.
-- Must work from `python -m http.server -d docs` and on GitHub Pages (range requests).
+- Must work locally with `cd docs && python -m RangeHTTPServer 8000` (http://localhost:8000) and on
+  GitHub Pages. PMTiles needs HTTP Range requests: **never** use `python -m http.server` for preview — it
+  ignores Range headers and the map loads with no data and no obvious error.
 
 ### Phase 4 — Portfolio
 
@@ -242,7 +247,7 @@ low access. Every finding quoted in the README must come from a notebook cell.
   voice, specific numbers, CRS stated, data licenses per dataset, "What I learned" written last
   and by me (Claude drafts only the factual sections unless asked).
 - Screenshot `images/headline.png` (Playwright headless capture of the deployed page is fine).
-- Reproduce in ≤3 commands: `conda env create …`, `make all CITY=carson_city`, `make serve`.
+- Reproduce in ≤3 commands: `conda env create …`, `make all CITY=carson_city`, `make serve` (`make serve` = `cd docs && python -m RangeHTTPServer 8000`).
 
 ## 7. Working agreements for Claude Code
 

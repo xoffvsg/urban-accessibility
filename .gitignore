@@ -28,3 +28,6 @@ __pycache__/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# personal setup notes (local only)
+WSL_VSCode_Setup_Guide.pdf

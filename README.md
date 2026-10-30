@@ -126,6 +126,15 @@ Issues that came up during setup but **were not caused by WSL** (they'd happen o
 Requires: Windows with WSL2 Ubuntu (or any Linux/macOS), conda (Miniforge), and a PostgreSQL server with
 PostGIS and pgRouting (Docker `kartoza/postgis` used here). See [SETUP.md](SETUP.md).
 
+To view the map locally after the pipeline has run:
+
+```bash
+cd docs && python -m RangeHTTPServer 8000    # open http://localhost:8000
+```
+
+RangeHTTPServer is used instead of `python -m http.server` because PMTiles reads byte ranges of the
+tile file, which the built-in server does not support.
+
 ---
 
 ## What I learned

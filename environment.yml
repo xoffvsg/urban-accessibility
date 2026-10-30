@@ -41,3 +41,4 @@ dependencies:
   - pip
   - pip:
       - pygris           # TIGER/Line block groups
+      - rangehttpserver  # local preview server with HTTP Range support (needed by PMTiles)
