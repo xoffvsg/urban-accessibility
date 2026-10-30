@@ -1,0 +1,30 @@
+# secrets
+.env
+
+# data (raw, interim, processed) — rebuilt by the pipeline
+data/**
+!data/**/.gitkeep
+
+# deployed tiles ARE committed
+!docs/data/
+!docs/data/*.pmtiles
+!docs/data/*.json
+
+# python / notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# GIS scratch
+*.qgz~
+*.aux.xml
+
+# editors / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db

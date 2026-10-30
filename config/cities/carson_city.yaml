@@ -1,0 +1,24 @@
+# City config — copy this file and change the values to run another location.
+slug: carson_city                 # also the PostGIS schema name and data/ subfolder
+name: "Carson City, NV"
+
+bbox:                             # WGS84 degrees
+  lon_min: -119.8
+  lat_min: 39.0
+  lon_max: -119.7
+  lat_max: 39.2
+edge_buffer_m: 2000               # fetch services this far outside the bbox (edge effects)
+analysis_crs: auto                # auto = UTM zone of bbox centroid (here EPSG:32611)
+data_dir: data                    # relative to repo root; may be a Linux path (e.g. ~/data/urban_access) for speed
+
+overture:
+  release: "2026-10-21.0"         # pin; record in README
+
+census:
+  state_fips: auto                # auto = detect from bbox (Carson City: 32)
+  county_fips: auto               # (Carson City: 510)
+  acs_year: 2024                  # ACS 5-year end year — verify latest available
+
+transit:
+  gtfs_url: null                  # TODO: JAC feed, Transitland operator o-jumparoundcarson~nv~us
+                                  # null -> fall back to Overture transit POIs

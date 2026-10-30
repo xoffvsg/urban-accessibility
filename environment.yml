@@ -1,0 +1,43 @@
+name: urban-access
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  # geospatial core
+  - gdal>=3.9            # ogr2ogr with GeoParquet + PostgreSQL drivers
+  - geopandas>=1.0
+  - pyogrio
+  - shapely>=2.0
+  - pyproj
+  - pyarrow
+  - python-duckdb>=1.1   # spatial + httpfs extensions installed at runtime
+  # database
+  - psycopg>=3.1
+  - sqlalchemy>=2.0
+  - geoalchemy2
+  # census / gtfs / config
+  - requests
+  - pyyaml
+  - python-dotenv
+  # analysis
+  - pandas
+  - numpy
+  - scipy
+  - libpysal
+  - esda                 # LISA / Moran's I for equity clusters
+  # tiles
+  - tippecanoe>=2.17     # writes .pmtiles directly
+  # notebooks + viz during development
+  - jupyterlab
+  - ipykernel
+  - matplotlib
+  - mapclassify
+  - folium
+  # tooling
+  - ruff
+  - pytest
+  - nbstripout
+  - playwright           # README screenshot
+  - pip
+  - pip:
+      - pygris           # TIGER/Line block groups

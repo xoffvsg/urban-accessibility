@@ -1,0 +1,35 @@
+# Method settings shared by all cities.
+
+walk_speed_m_per_min: 80          # 400 m ≈ 5 min
+
+bands:                            # network distance (m) -> access value
+  - {max_m: 400,  value: 1.0}     # 5-min walk
+  - {max_m: 800,  value: 0.6}     # 10-min walk
+  - {max_m: 1600, value: 0.3}     # 20-min walk
+                                  # beyond last band -> 0
+
+weights:                          # must sum to 1.0
+  grocery: 0.25
+  healthcare: 0.20
+  transit: 0.20
+  schools: 0.20
+  parks: 0.15
+
+# Overture places category mapping (basic_category / taxonomy.primary).
+# CANDIDATE VALUES ONLY — finalize from notebooks/00_explore_categories.ipynb output.
+services:
+  grocery:
+    match: [grocery_store, supermarket]
+  healthcare:
+    match: [pharmacy, hospital, clinic, doctor, urgent_care]
+  schools:
+    match: [elementary_school, middle_school, high_school, school]
+  parks:
+    match: [park, playground]
+    include_landuse_polygons: true
+  transit:
+    match: [bus_stop, bus_station, transit_station]
+    prefer_gtfs: true
+
+min_place_confidence: 0.5         # TBD-PLAN: tune after inspecting the bbox
+max_snap_distance_m: 200          # flag origins/destinations farther than this from the network

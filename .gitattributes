@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.ipynb text eol=lf
+*.pmtiles binary
+*.parquet binary
+*.png binary
+*.docx binary
