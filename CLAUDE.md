@@ -234,6 +234,10 @@ low access. Every finding quoted in the README must come from a notebook cell.
 
 ### Phase 4 — Portfolio
 
+- `README.md` already exists with a **Development environment** section (why WSL, why Docker, the
+  extra steps, what could have been done differently). Keep it and keep it current: when a new
+  environment issue or workaround comes up, add it to that section (WSL-caused vs not). Fill the
+  TODO placeholders as each phase finishes; don't delete that section.
 - `README.md` follows `reference/` section order; matter-of-fact
   voice, specific numbers, CRS stated, data licenses per dataset, "What I learned" written last
   and by me (Claude drafts only the factual sections unless asked).
