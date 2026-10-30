@@ -46,6 +46,10 @@ python -m ipykernel install --user --name urban-access
 
 - Connection settings come from `.env` (`PGHOST=localhost`, `PGPORT=5436`, `PGDATABASE=urban_access`).
   Never hard-code credentials; never commit `.env`.
+- **Check the environment at session start:** run `which python` once. It must be
+  `~/miniforge3/envs/urban-access/bin/python`. If it isn't (Claude Code was started from `(base)`),
+  tell the user to `/exit`, `conda activate urban-access` and restart, or prefix commands with
+  `conda run -n urban-access …`. Never install packages into `base` to work around it.
 - **Loading `.env` in Python:** always pass an explicit path anchored at the repo root, e.g. in
   `src/urban_access/config.py`: `load_dotenv(Path(__file__).resolve().parents[2] / ".env")`.
   Bare `load_dotenv()` fails (`AssertionError` in `find_dotenv`) from stdin / heredoc scripts and can
@@ -66,6 +70,10 @@ python -m ipykernel install --user --name urban-access
 - **DuckDB Python API (recent version in env):** relations from `con.sql(...)` no longer have
   `.fetchone()`. Use `con.sql(...).fetchall()`, `.df()`, `.arrow()`, or `con.execute(sql, params).fetchone()`.
   Prefer `con.execute(sql, params)` with bound parameters for bbox values from config.
+- **`PROJ_DATA`:** if Claude Code / VS Code starts a process with the env's `bin/` on PATH but without
+  `conda activate` (`CONDA_PREFIX` still points at base), `PROJ_DATA` is unset and pyogrio/GDAL print
+  `PROJ: proj_create_from_database: Open of …/share/proj failed`. `urban_access/__init__.py` sets it
+  from `sys.prefix`; in notebooks, `import urban_access` before geopandas.
 - GDAL/ogr2ogr and tippecanoe come **from the conda env** (`which ogr2ogr` must point inside
   `.../envs/urban-access/`). Don't call Windows-side tools or the Anaconda3 base GDAL.
 - tippecanoe ≥ 2.17 writes `.pmtiles` directly; no separate `pmtiles` CLI is required.
@@ -85,12 +93,12 @@ python -m ipykernel install --user --name urban-access
 Urban_Accessibility/        # C:\dev\PortfolioProject4\Urban_Accessibility (GitHub repo: urban-accessibility)
 ├── CLAUDE.md               # this file
 ├── .gitattributes          # LF line endings
-├── README.md               # portfolio case study (Phase 4) — follows reference/ template
+├── README.md               # portfolio case study (Phase 4)
 ├── SETUP.md                # environment setup in WSL bash
 ├── LICENSE                 # MIT (code); data licenses listed in README
 ├── environment.yml
 ├── .env.example            # copy to .env (git-ignored)
-├── Makefile                # one target per pipeline step + `all`   (TBD-PLAN: exact targets)
+├── Makefile                # census / extract / gtfs / phase1 / test / lint / serve; `all` grows per phase
 ├── config/
 │   ├── scoring.yaml        # bands, weights, Overture category → service mapping (shared)
 │   └── cities/
@@ -125,8 +133,7 @@ Urban_Accessibility/        # C:\dev\PortfolioProject4\Urban_Accessibility (GitH
 │   ├── app.js
 │   ├── style.css
 │   └── data/<city_slug>.pmtiles, <city_slug>_summary.json
-├── images/headline.png     # README screenshot
-└── reference/
+└── images/headline.png     # README screenshot
 ```
 
 `docs/data/*.pmtiles` **is** committed (it's the deployed product, a few MB). Everything under `data/` is not.
@@ -156,18 +163,19 @@ Path pattern: `s3://overturemaps-us-west-2/release/<release>/theme=<theme>/type=
 
 | Output file | Source | Notes |
 |---|---|---|
-| `places.parquet` | `places/place` | Keep id, names.primary, `basic_category`, `taxonomy` (primary, hierarchy, alternate), confidence, operating status if present, geometry. |
+| `places.parquet` | `places/place` | id, name, `basic_category`, `taxonomy_primary` / `taxonomy_hierarchy` / `taxonomy_alternates` (flattened), brand, confidence, operating_status, geometry. |
 | `buildings.parquet` | `buildings/building` | id, class, subtype, height, num_floors, geometry. |
 | `segments.parquet` | `transportation/segment` | subtype = road (+ any pedestrian subtypes), class, connectors, access restrictions, geometry. |
 | `connectors.parquet` | `transportation/connector` | For network topology. |
-| `parks.parquet` | `base/land_use` (park-like subtypes/classes) | Park **polygons**; supplements park POIs. TBD-PLAN: exact class filter. |
+| `parks.parquet` | `base/land_use` (park-like subtypes/classes) | Park **polygons**; supplements park POIs. Filter = `services.parks.landuse` in `scoring.yaml` (park: park, dog_park; recreation: playground, recreation_ground). |
 | `neighborhoods.parquet` | `divisions/division_area` (subtype neighborhood/microhood) | Optional: human-readable names for popups. |
 | `block_groups.parquet` | TIGER/Line via `pygris` | Same vintage as ACS. |
 | `acs.parquet` | Census API, ACS 5-yr, block group | See variable list below. |
 | `gtfs_stops.parquet` | GTFS `stops.txt` | Only if `transit.gtfs_url` set. |
 
 **Important — Overture schema change:** the `categories` column was removed from places in the
-September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.alternate`.
+September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.hierarchy` / `taxonomy.alternates`
+(plural). Service matching uses `taxonomy.hierarchy` + `alternates`; `basic_category` is too coarse.
 Notebook `00_explore_categories` must list the distinct values present in the bbox so the service
 mapping in `scoring.yaml` is set from real data, not guessed. Places releases expire from S3 after
 a while — cached raw files are the record; never assume an old release is still online.
@@ -187,7 +195,8 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
    segments whose access restrictions deny foot travel. Build topology by splitting segments at
    their Overture connectors (or `pgr_extractVertices` approach; pgRouting 4 — no `pgr_createTopology`) → `edges(id, source, target, cost_m, geom)`,
    undirected, cost = length in metres. TBD-PLAN: whether to keep only the largest connected
-   component; how to treat segments with no sidewalk data (Overture rarely has it — note as limitation).
+   component. Carson City has Overture `footway` subclasses `sidewalk` (2,165) and `crosswalk` (1,685), so
+   sidewalk coverage is partial, not absent: decide how to treat roads without a mapped sidewalk.
 3. **Snap** origins (residential buildings) and destinations (services) to nearest network vertex;
    store the snap distance and add it to the network distance. Flag snaps > 200 m.
 4. **Distances.** For each service type, compute network distance from every origin vertex to the
@@ -243,7 +252,7 @@ low access. Every finding quoted in the README must come from a notebook cell.
   extra steps, what could have been done differently). Keep it and keep it current: when a new
   environment issue or workaround comes up, add it to that section (WSL-caused vs not). Fill the
   TODO placeholders as each phase finishes; don't delete that section.
-- `README.md` follows `reference/` section order; matter-of-fact
+- `README.md` keeps its current case-study section order (see also `CLAUDE.local.md` if present); matter-of-fact
   voice, specific numbers, CRS stated, data licenses per dataset, "What I learned" written last
   and by me (Claude drafts only the factual sections unless asked).
 - Screenshot `images/headline.png` (Playwright headless capture of the deployed page is fine).
@@ -256,7 +265,10 @@ low access. Every finding quoted in the README must come from a notebook cell.
 - The kartoza container is shared with other projects — only touch the `urban_access` database.
 - Notebooks: numbered, run top-to-bottom, first cell loads config for `CITY` and sets paths;
   no hard-coded bbox, paths, or credentials. Move any function used twice into `src/`.
-  Outputs are stripped on commit (`nbstripout`).
+  **Execute notebooks in place**, in numeric order, so the outputs are saved in `notebooks/*.ipynb`:
+  `jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.kernel_name=urban-access notebooks/<nn>_<name>.ipynb`.
+  Never execute into a scratchpad or other copy. Outputs stay in the local files; the `nbstripout`
+  git filter removes them only from what is committed.
 - SQL lives in `sql/*.sql`, parameterised by schema; no SQL strings longer than a few lines in Python.
 - Units: metres in the analysis CRS everywhere. Name columns with units (`_m`, `_pct`).
 - Style: `ruff` for lint/format; type hints in `src/`; `pytest` for scoring math and config parsing.
@@ -266,11 +278,23 @@ low access. Every finding quoted in the README must come from a notebook cell.
 
 ## 8. Open items for Plan Mode (TBD-PLAN)
 
-1. Final Overture `basic_category`/`taxonomy` → service mapping (from notebook 00 output).
-2. Walkable segment filter and connected-component handling.
-3. Residential-building heuristic thresholds; what to do with mobile-home parks / large lots.
-4. JAC (Jump Around Carson) GTFS URL — operator `o-jumparoundcarson~nv~us` on Transitland.
-5. Whether schools count all levels equally or only K-8 for walk access.
+Resolved in Phase 1 planning (2026-10-30):
+
+1. ~~Service mapping~~ → `config/scoring.yaml` `services:` (taxonomy hierarchy match) + per-city
+   `services:` name include/exclude lists in `config/cities/<slug>.yaml`. Set from
+   `data/interim/<slug>/service_review.csv` (notebook 00). Grocery = full-service only (convenience
+   stores are a side metric); healthcare = pharmacy + primary/urgent care + hospital (no
+   `doctors_office`, dental, eye, EMS).
+4. ~~JAC GTFS URL~~ → `https://JumpAroundCarson.transloc.com/Secure/Admin/Reports/GTFSDownload.aspx`
+   (the carson.org document link is dead). Zip cached in `data/raw/<slug>/gtfs.zip`.
+5. ~~School levels~~ → **K-8 only** (elementary + middle; named K-8 private schools via city include list).
+7. ~~Makefile / driver~~ → **CLI-driven**: `python -m urban_access.cli <step> --city <slug>`; the
+   Makefile calls the CLI; notebooks call the same `src/` functions and add checks and plots. No papermill.
+
+Still open:
+
+2. Walkable segment filter and connected-component handling (Phase 2; see the class/subclass table in nb 01).
+3. Residential-building heuristic thresholds; what to do with mobile-home parks / large lots (Phase 2;
+   2,279 `static_caravan` buildings, 14,787 unclassified with median footprint 148 m²).
 6. Basemap provider; colour ramp and class breaks.
-7. Makefile targets and whether steps are notebook-driven (papermill) or CLI-driven.
 8. Optional: H3 summary layer or a second city to prove the config is portable.

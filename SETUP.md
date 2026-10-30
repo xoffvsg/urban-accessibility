@@ -47,6 +47,7 @@ conda activate urban-access
 # one-time setup steps that USE packages installed above:
 python -m ipykernel install --user --name urban-access --display-name "Python (urban-access)"   # register Jupyter kernel
 nbstripout --install                       # add git filter to this repo (run after git init)
+pip install -e .                           # make src/urban_access importable (CLI, notebooks, tests)
 playwright install --with-deps chromium    # download browser for README screenshot (optional until Phase 4)
 ```
 
@@ -129,10 +130,43 @@ conda env update -f environment.yml --prune
 python -c "import RangeHTTPServer; print('ok')"
 ```
 
-## 8. Start Claude Code
+## 8. Claude Code in WSL
+
+A Claude Code install on Windows is not visible from Ubuntu, and the VS Code extension does not
+provide the `claude` terminal command. Install the command-line tool inside WSL (once per machine):
 
 ```bash
-claude            # in the repo root; it reads CLAUDE.md
+curl -fsSL https://claude.ai/install.sh | bash      # native installer; shows no progress while downloading
 ```
+
+If the installer reports that `~/.local/bin` is not in your PATH, run the line it prints:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+```
+
+Reloading `.bashrc` re-runs the conda setup block and switches the terminal back to `(base)`.
+Re-activate the project environment, then verify:
+
+```bash
+conda activate urban-access
+claude --version     # e.g. "2.1.x (Claude Code)"
+claude doctor        # optional: installation and settings diagnostics
+```
+
+The native install updates itself in the background. The first `claude` run opens a browser to log in
+with your Claude account.
+
+## 9. Start Claude Code
+
+Claude Code's commands run in the environment it was started from, so start it from `(urban-access)`:
+
+```bash
+conda activate urban-access     # prompt must show (urban-access), not (base)
+which python                    # .../envs/urban-access/bin/python
+claude                          # in the repo root; it reads CLAUDE.md
+```
+
+If it was started from `(base)`: `/exit`, activate, start again.
 
 Switch to Plan Mode (Shift+Tab) and start from section 8 "Open items" in CLAUDE.md.

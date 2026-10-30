@@ -15,21 +15,32 @@ weights:                          # must sum to 1.0
   schools: 0.20
   parks: 0.15
 
-# Overture places category mapping (basic_category / taxonomy.primary).
-# CANDIDATE VALUES ONLY — finalize from notebooks/00_explore_categories.ipynb output.
+# Overture places → service mapping. Set from notebooks/00_explore_categories.ipynb (release 2026-10-21.0).
+# `taxonomy` values match taxonomy.hierarchy (primary + all ancestors) or taxonomy.alternates.
+# City-specific name include/exclude lists go in config/cities/<slug>.yaml under `services:`.
+# All services: permanently_closed places dropped; confidence >= min_confidence (per-service override).
 services:
-  grocery:
-    match: [grocery_store, supermarket]
-  healthcare:
-    match: [pharmacy, hospital, clinic, doctor, urgent_care]
-  schools:
-    match: [elementary_school, middle_school, high_school, school]
+  grocery:                        # full-service grocery only
+    taxonomy: [grocery_store, supermarket]
+    secondary:                    # reported as a side metric, not in the score
+      convenience: [convenience_store]
+  healthcare:                     # essential: primary/urgent care, pharmacy, hospital. Excludes doctors_office
+                                  # (mostly specialists + mis-tagged businesses here), dental, eye, EMS.
+    taxonomy: [pharmacy, drugstore, primary_care_or_general_clinic, urgent_care_clinic,
+               walk_in_clinic, pediatric_clinic, hospital]
+    min_confidence: 0.6
+  schools:                        # K-8 only (elementary + middle)
+    taxonomy: [elementary_school, middle_school]
+    min_confidence: 0.6
   parks:
-    match: [park, playground]
-    include_landuse_polygons: true
-  transit:
-    match: [bus_stop, bus_station, transit_station]
+    taxonomy: [park, dog_park, playground, skate_park]
+    landuse:                      # Overture base/land_use subtype -> classes (park polygons)
+      park: [park, dog_park]
+      recreation: [playground, recreation_ground]
+  transit:                        # Overture fallback only; GTFS stops are used when transit.gtfs_url is set
+    taxonomy: [bus_station, bus_stop, public_transit_facility_or_service, train_station]
     prefer_gtfs: true
 
-min_place_confidence: 0.5         # TBD-PLAN: tune after inspecting the bbox
+min_place_confidence: 0.5         # bbox p10 = 0.55; noise mostly below 0.6
 max_snap_distance_m: 200          # flag origins/destinations farther than this from the network
+dedupe_distance_m: 75             # same normalised name within this distance = one place

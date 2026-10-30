@@ -17,9 +17,28 @@ Which neighborhoods in Carson City have the best — and worst — walking acces
 
 ## The data
 
-<!-- TODO (Phase 2–4): one line per dataset: name, feature count, source link, license.
-     Overture places / buildings / transportation / base land_use / divisions (release 2026-10-21.0),
-     TIGER/Line block groups, ACS 5-year, JAC GTFS (if used). End with the CRS (EPSG:32611). -->
+Counts are for the fetch extent: the city bbox plus the block groups scored for it (centroid inside
+the bbox), buffered 2 km so services just outside still count.
+
+| Dataset | Features | Source | License |
+|---|---|---|---|
+| Overture places (`places/place`) | 4,858 | [Overture Maps](https://overturemaps.org), release `2026-10-21.0` | CDLA-Permissive-2.0 |
+| Overture buildings | 38,554 | Overture `buildings/building` | ODbL (OSM-derived) |
+| Overture road segments / connectors | 16,650 / 24,430 | Overture `transportation` | ODbL |
+| Overture park land use | 98 polygons | Overture `base/land_use` (park, dog park, playground, recreation ground) | ODbL |
+| Census block groups | 80 (46 scored: 40 Carson City, 6 Douglas County) | TIGER/Line 2024 via [pygris](https://github.com/walkerke/pygris) | Public domain |
+| ACS 5-year 2020–2024 | 80 block groups | [Census API](https://www.census.gov/data/developers/data-sets/acs-5year.html): population, age, income, vehicles, with MOEs | Public domain |
+| JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
+
+Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
+overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart `department_store`).
+Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
+
+ACS caveat: at block-group level the share of households without a car has a coefficient of variation
+above 30 % in 34 of 46 scored block groups, and median income in 11. These fields are shown with their
+margins of error.
+
+Analysis CRS: **EPSG:32611** (WGS 84 / UTM 11N, metres). Web layers are exported in EPSG:4326.
 
 ---
 
@@ -94,6 +113,7 @@ would be OSMnx/NetworkX on an OpenStreetMap walk network.
 | Install **Miniforge in Ubuntu**, create the env, select the interpreter by path | Windows conda environments aren't visible from Linux |
 | `git config core.fileMode false`, `core.autocrlf input`, `.gitattributes` with LF | Files on `/mnt/c` look executable to Linux; Windows and Linux use different line endings |
 | Set **git identity** and a **credential helper** in WSL | WSL git has its own config, separate from Windows git |
+| Install the **Claude Code CLI inside Ubuntu** (`curl -fsSL https://claude.ai/install.sh \| bash`) and add `~/.local/bin` to the PATH | A Windows install isn't visible from WSL, and the VS Code extension doesn't provide the `claude` terminal command. Reloading `~/.bashrc` afterwards drops back to `(base)`, so `conda activate urban-access` is needed again before starting `claude` |
 | Know the **Ubuntu user password** for `sudo` | Needed for `apt-get` (e.g. the `psql` client) |
 | Fix `docker ps` → *permission denied* on `docker.sock` | Docker Desktop's WSL integration plus membership of the `docker` group. Not needed for the project itself, which connects through port 5436 |
 | Dismiss the *"workspace is on the Windows file system"* warning | The repo is on `C:` on purpose; file access from WSL is slower there |
@@ -101,7 +121,11 @@ would be OSMnx/NetworkX on an OpenStreetMap walk network.
 Issues that came up during setup but **were not caused by WSL** (they'd happen on Windows too):
 `psql` waiting at `(END)` (pager; use `-P pager=off`), `load_dotenv()` failing from a heredoc script
 (pass an explicit `.env` path), DuckDB 2.0 removing `.fetchone()` on relations, and pgRouting 4 removing
-`pgr_createTopology` and related functions.
+`pgr_createTopology` and related functions. Another one: a process started by VS Code (here the Claude
+Code extension) can have the env's `bin/` on its PATH without `conda activate` having run. Then conda's
+activation scripts don't set `PROJ_DATA`, and pyogrio/GDAL print `PROJ: proj_create_from_database: Open
+of …/share/proj failed`. The package sets `PROJ_DATA` from `sys.prefix` when it's missing
+(`src/urban_access/__init__.py`).
 
 ### What could have been done differently
 

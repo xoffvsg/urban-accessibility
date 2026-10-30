@@ -20,5 +20,25 @@ census:
   acs_year: 2024                  # ACS 5-year end year — verify latest available
 
 transit:
-  gtfs_url: null                  # TODO: JAC feed, Transitland operator o-jumparoundcarson~nv~us
-                                  # null -> fall back to Overture transit POIs
+  # JAC (Jump Around Carson) via TransLoc; verified 2026-10-30 (184 stops, calendar to 2032-10-30).
+  # The older carson.org document link no longer resolves. The zip is cached in data/raw/<slug>/.
+  gtfs_url: "https://JumpAroundCarson.transloc.com/Secure/Admin/Reports/GTFSDownload.aspx"
+
+# City-specific additions to config/scoring.yaml `services:` (case-insensitive regex on names.primary).
+# include_names adds places whatever their category; exclude_names removes category matches.
+# Set from data/interim/<slug>/service_review.csv (notebook 00).
+services:
+  grocery:
+    include_names: ["^walmart$", "^target$", "^costco$", "^grocery outlet", "^raley'?s", "^trader joe'?s"]
+    exclude_names: ["grocery pickup", "popcorn", "am ?pm", "liquor"]
+  healthcare:
+    include_names: ["^sierra family health center"]   # primary care tagged doctors_office
+    exclude_names: ["d\\.?d\\.?s", "dental", "marketers", "hometown health", "medical capital",
+                    "behavioral health"]
+  schools:
+    # K-8 private schools tagged school/private_school (verify grades before publishing)
+    include_names: ["^st\\.? teresa'?s school", "^bethlehem lutheran school"]
+    exclude_names: ["free world u", "centro de desarrollo", "moulage", "wild west medical"]
+  parks:
+    exclude_names: ["parks and recreation department", "^nevada state parks$", "nature conservancy",
+                    "air park"]
