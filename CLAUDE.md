@@ -76,6 +76,11 @@ python -m ipykernel install --user --name urban-access
   from `sys.prefix`; in notebooks, `import urban_access` before geopandas.
 - GDAL/ogr2ogr and tippecanoe come **from the conda env** (`which ogr2ogr` must point inside
   `.../envs/urban-access/`). Don't call Windows-side tools or the Anaconda3 base GDAL.
+- **GDAL drivers are plugins on conda-forge.** `gdal` pulls only `libgdal-core`, which has no Parquet and
+  no PostgreSQL driver. `environment.yml` adds `libgdal-arrow-parquet` and `libgdal-pg` (note: the
+  `libgdal` meta-package does *not* include the Parquet plugin). Before any `ogr2ogr` load, check
+  `ogr2ogr --formats | grep -E "Parquet|PostgreSQL"` prints both; if not, ask the user to run
+  `conda env update -f environment.yml --prune`. Never fall back to another GDAL install.
 - tippecanoe ≥ 2.17 writes `.pmtiles` directly; no separate `pmtiles` CLI is required.
 - Local map preview: `rangehttpserver` (pip, in `environment.yml`) → `cd docs && python -m RangeHTTPServer 8000`.
   It has no `--directory` option, so it must run from inside `docs/`. The web page reads only static files

@@ -125,7 +125,9 @@ Issues that came up during setup but **were not caused by WSL** (they'd happen o
 Code extension) can have the env's `bin/` on its PATH without `conda activate` having run. Then conda's
 activation scripts don't set `PROJ_DATA`, and pyogrio/GDAL print `PROJ: proj_create_from_database: Open
 of …/share/proj failed`. The package sets `PROJ_DATA` from `sys.prefix` when it's missing
-(`src/urban_access/__init__.py`).
+(`src/urban_access/__init__.py`). And one more: conda-forge's `gdal` package installs only
+`libgdal-core`, which has neither the Parquet nor the PostgreSQL driver, so `ogr2ogr file.parquet PG:…`
+failed until the `libgdal-arrow-parquet` and `libgdal-pg` plugins were added to `environment.yml`.
 
 ### What could have been done differently
 

@@ -60,6 +60,20 @@ tippecanoe --version                       # >= 2.17
 python -c "import duckdb, geopandas; print(duckdb.__version__, geopandas.__version__)"
 ```
 
+The `ogr2ogr --formats` check must include **`Parquet -vector- … (Geo)Parquet`** and
+**`PostgreSQL -vector- … PostgreSQL/PostGIS`**. A third line, `PGDUMP … PostgreSQL SQL dump`, is a
+built-in driver that matches the search too; it does not show that the PostgreSQL plugin is installed.
+On conda-forge, `gdal` only brings `libgdal-core`, which has neither driver: they ship as separate
+plugins (`libgdal-arrow-parquet`, `libgdal-pg`), listed in `environment.yml`. If the check prints
+nothing, the environment predates them:
+
+```bash
+conda env update -f environment.yml --prune
+ogr2ogr --formats | grep -E "Parquet|PostgreSQL"     # now lists Parquet and PostgreSQL/PostGIS
+```
+
+Without them, `ogr2ogr data.parquet PG:…` (the PostGIS load in Phase 2) fails.
+
 In VS Code: `Ctrl+Shift+P → Python: Select Interpreter → urban-access`, and pick the
 "Python (urban-access)" kernel in notebooks.
 
