@@ -46,9 +46,14 @@ Which neighborhoods in Carson City have the best — and worst — walking acces
 
 ## Development environment
 
-This project was built on Windows 11 using **VS Code attached to WSL2 Ubuntu**, with a bash terminal,
+This project was built on a Windows 10 desktop using **VS Code attached to WSL2 Ubuntu**, with a bash terminal,
 a conda environment inside Ubuntu, and PostGIS + pgRouting in a Docker container. That is not the
 simplest setup that would have worked, and the reasons are recorded here.
+
+A Windows 11 laptop is the second machine, synced through GitHub. It has not been set up for this
+project yet; any differences found when repeating the setup there will be added below.
+
+<!-- TODO (laptop setup): note what differed on Windows 11 / the laptop, if anything. -->
 
 ### Why WSL2 Ubuntu
 
