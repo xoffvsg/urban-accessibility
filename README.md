@@ -44,9 +44,40 @@ Analysis CRS: **EPSG:32611** (WGS 84 / UTM 11N, metres). Web layers are exported
 
 ## Methodology
 
-<!-- TODO (Phase 2–4): extract → transform → visualize, plus the non-obvious choices:
-     block groups instead of tracts, network distance instead of buffers, tiered 5/10/20-minute bands,
-     dasymetric population on residential buildings. -->
+**Extract.** DuckDB reads Overture GeoParquet straight from S3, filtering on the `bbox` columns, for the
+bbox plus the scored block groups, buffered 2 km. TIGER block groups and ACS come from pygris and the
+Census API. JAC stops come from the GTFS feed.
+
+**Walk network.** All Overture road and path segments except motorways and segments where foot access is
+denied, split at Overture connectors into 36,346 undirected edges (cost = length in metres, EPSG:32611)
+and loaded into PostGIS. Routing uses the largest connected component, which holds 98.8 % of the network
+length. pgRouting 4.0.1 computes the distances.
+
+**Origins: where people live.** Each block group's ACS population is spread over its residential
+buildings (dasymetric allocation): 16,735 classified homes, including mobile homes, plus 5,533
+unclassified house-sized footprints. Each building is weighted by footprint area × floors. Access is
+measured from every home and averaged per block group, weighted by population, so a block group's empty
+hills don't count as people without access.
+
+**Distances.** Homes and services are snapped to the nearest walkable edge, not the nearest
+intersection, because blocks here are often 100–200 m long. The distance to the nearest service of each
+type comes from a single-source driving-distance run out of a virtual node connected to every service.
+Multi-source `equicost` in pgRouting 4.0.1 returned non-minimal distances, and the switch was verified
+against point-to-point Dijkstra (0.00 m difference on 40 random pairs). Parks are reached at any point
+of their boundary within 30 m of a path. Transit means GTFS stops.
+
+**Scoring.** Tiered walk bands: ≤ 400 m (about 5 min) = 1.0, ≤ 800 m = 0.6, ≤ 1,600 m = 0.3, beyond = 0.
+Per service, the score is the population-weighted mean × 100. The composite `access_score` is the
+weighted sum (grocery 0.25, healthcare 0.20, transit 0.20, schools 0.20, parks 0.15). Scores are absolute,
+not rescaled, so other cities are comparable; a city-relative percentile is stored alongside.
+
+**Why block groups.** There are 46 here against roughly a dozen tracts, which is enough resolution to see
+neighbourhood differences. The cost is large ACS margins of error (see The data).
+
+**Limitations.** Roads without a mapped sidewalk are treated as walkable. Access rules that apply to
+part of a segment are applied to the whole segment. Overture place categories need city-specific
+corrections (see `config/cities/carson_city.yaml`). Healthcare still includes some specialist clinics
+that Overture tags as general clinics.
 
 ---
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import census, extract, gtfs
+from . import census, db, extract, gtfs, network, scoring
 from .config import CityConfig, default_city, load_city
 
 
@@ -30,7 +30,37 @@ def step_phase1(cfg: CityConfig, args: argparse.Namespace) -> None:
     step_gtfs(cfg, args)
 
 
-STEPS = {"census": step_census, "extract": step_extract, "gtfs": step_gtfs, "phase1": step_phase1}
+def step_load(cfg: CityConfig, args: argparse.Namespace) -> None:
+    for table, sec in db.load_all(cfg).items():
+        print(f"[load] {table}: {sec:.1f} s")
+
+
+def step_network(cfg: CityConfig, args: argparse.Namespace) -> None:
+    print(network.build(cfg).to_string())
+
+
+def step_score(cfg: CityConfig, args: argparse.Namespace) -> None:
+    network.distances(cfg)
+    out = scoring.run(cfg)
+    print(out[["geoid", "pop_total", "access_score"]].describe().round(1).to_string())
+
+
+def step_phase2(cfg: CityConfig, args: argparse.Namespace) -> None:
+    step_load(cfg, args)
+    step_network(cfg, args)
+    step_score(cfg, args)
+
+
+STEPS = {
+    "census": step_census,
+    "extract": step_extract,
+    "gtfs": step_gtfs,
+    "phase1": step_phase1,
+    "load": step_load,
+    "network": step_network,
+    "score": step_score,
+    "phase2": step_phase2,
+}
 
 
 def main(argv: list[str] | None = None) -> None:

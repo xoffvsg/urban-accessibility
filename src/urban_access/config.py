@@ -115,6 +115,36 @@ class Scoring:
     min_place_confidence: float
     max_snap_distance_m: float
     dedupe_distance_m: float
+    network: dict[str, float] = field(default_factory=dict)
+    residential: dict[str, float] = field(default_factory=dict)
+
+    @property
+    def near_m(self) -> float:
+        """First band limit (the "5-minute" distance)."""
+        return self.bands[0][0]
+
+    @property
+    def max_m(self) -> float:
+        """Last band limit; beyond it access = 0."""
+        return self.bands[-1][0]
+
+    @property
+    def scored_services(self) -> list[str]:
+        """Services in the composite (have a weight); secondary groups are not."""
+        return list(self.weights)
+
+
+NETWORK_DEFAULTS = {
+    "park_access_step_m": 25.0,
+    "park_access_max_m": 30.0,
+    "service_area_buffer_m": 50.0,
+}
+RESIDENTIAL_DEFAULTS = {
+    "unclassified_min_area_m2": 40.0,
+    "unclassified_max_area_m2": 1500.0,
+    "floor_height_m": 3.5,
+    "fallback_grid_m": 50.0,
+}
 
 
 @dataclass(frozen=True)
@@ -242,6 +272,14 @@ def parse_scoring(raw: dict[str, Any], city_services: dict[str, Any] | None = No
         min_place_confidence=default_conf,
         max_snap_distance_m=float(raw.get("max_snap_distance_m", 200)),
         dedupe_distance_m=float(raw.get("dedupe_distance_m", 75)),
+        network={
+            **NETWORK_DEFAULTS,
+            **{k: float(v) for k, v in (raw.get("network") or {}).items()},
+        },
+        residential={
+            **RESIDENTIAL_DEFAULTS,
+            **{k: float(v) for k, v in (raw.get("residential") or {}).items()},
+        },
     )
 
 

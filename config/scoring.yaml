@@ -44,3 +44,17 @@ services:
 min_place_confidence: 0.5         # bbox p10 = 0.55; noise mostly below 0.6
 max_snap_distance_m: 200          # flag origins/destinations farther than this from the network
 dedupe_distance_m: 75             # same normalised name within this distance = one place
+
+# Walk network (sql/20_network.sql: motorways and foot-denied segments are dropped; largest
+# connected component only) and destination snapping.
+network:
+  park_access_step_m: 25          # park boundary densified every 25 m ...
+  park_access_max_m: 30           # ... points within 30 m of a walkable edge are park entrances
+  service_area_buffer_m: 50       # 400 m service area = reachable edge portions buffered by this
+
+# Dasymetric population (sql/30_origins.sql)
+residential:
+  unclassified_min_area_m2: 40    # unclassified footprints in this range count as homes ...
+  unclassified_max_area_m2: 1500  # ... unless a non-residential place lies inside
+  floor_height_m: 3.5             # floors = num_floors, else round(height / 3.5), min 1
+  fallback_grid_m: 50             # point grid for a populated block group with no homes

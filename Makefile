@@ -2,9 +2,9 @@
 CITY ?= carson_city
 PY   := python -m urban_access.cli
 
-.PHONY: all phase1 census extract gtfs test lint serve
+.PHONY: all phase1 census extract gtfs phase2 load network score test lint serve
 
-all: phase1
+all: phase1 phase2
 
 phase1:
 	$(PY) phase1 --city $(CITY)
@@ -17,6 +17,18 @@ extract: census
 
 gtfs:
 	$(PY) gtfs --city $(CITY)
+
+phase2:
+	$(PY) phase2 --city $(CITY)
+
+load:
+	$(PY) load --city $(CITY)
+
+network:
+	$(PY) network --city $(CITY)
+
+score:
+	$(PY) score --city $(CITY)
 
 test:
 	pytest -q

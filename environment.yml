@@ -4,7 +4,9 @@ channels:
 dependencies:
   - python=3.12
   # geospatial core
-  - gdal>=3.9            # ogr2ogr with GeoParquet + PostgreSQL drivers
+  - gdal>=3.9            # ogr2ogr (core drivers only: libgdal-core)
+  - libgdal-arrow-parquet  # GDAL plugin: (Geo)Parquet driver
+  - libgdal-pg           # GDAL plugin: PostgreSQL/PostGIS driver
   - geopandas>=1.0
   - pyogrio
   - shapely>=2.0

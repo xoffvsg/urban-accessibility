@@ -67,6 +67,10 @@ python -m ipykernel install --user --name urban-access
   Build topology from Overture connectors (segment split at connector positions → `source`/`target` =
   connector ids) and/or `pgr_extractVertices`; `pgr_separateCrossing` / `pgr_separateTouching` are
   available for fixing noding. Check signatures against https://docs.pgrouting.org/4.0/en/ before writing SQL.
+  **Don't use multi-source `pgr_drivingDistance(..., equicost := true)` for "nearest service":**
+  in 4.0.1 it returned 506 m for a vertex whose nearest stop is 453 m away. Use a virtual
+  super-source joined to every destination at cost 0 and a single-source `pgr_drivingDistance`
+  (`sql/50_distances.sql`); `network.check_pairs` re-checks against one-to-many `pgr_dijkstraCost`.
 - **DuckDB Python API (recent version in env):** relations from `con.sql(...)` no longer have
   `.fetchone()`. Use `con.sql(...).fetchall()`, `.df()`, `.arrow()`, or `con.execute(sql, params).fetchone()`.
   Prefer `con.execute(sql, params)` with bound parameters for bbox values from config.
@@ -196,23 +200,30 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
 
 1. **Load** each GeoParquet with `ogr2ogr` into `<slug>.<table>`, reprojected to the analysis CRS
    (`-t_srs`), `GEOMETRY_NAME=geom`, spatial index. Script it (`db.py` / `sql/`), idempotent (drop & reload).
-2. **Walk network.** Keep segments a pedestrian can use: drop motorways/trunk-style classes and
-   segments whose access restrictions deny foot travel. Build topology by splitting segments at
-   their Overture connectors (or `pgr_extractVertices` approach; pgRouting 4 — no `pgr_createTopology`) → `edges(id, source, target, cost_m, geom)`,
-   undirected, cost = length in metres. TBD-PLAN: whether to keep only the largest connected
-   component. Carson City has Overture `footway` subclasses `sidewalk` (2,165) and `crosswalk` (1,685), so
-   sidewalk coverage is partial, not absent: decide how to treat roads without a mapped sidewalk.
-3. **Snap** origins (residential buildings) and destinations (services) to nearest network vertex;
-   store the snap distance and add it to the network distance. Flag snaps > 200 m.
-4. **Distances.** For each service type, compute network distance from every origin vertex to the
-   nearest service of that type, capped at 1600 m (multi-source `pgr_drivingDistance` with
-   `equicost` or equivalent). Parks: use access points along the polygon boundary (polygon ∩
-   network buffer) plus park POIs. Transit: stop points.
-5. **Population allocation (dasymetric).** Residential buildings = Overture `class`/`subtype`
-   residential, or unclassified buildings within a plausible footprint range not coincident with a
-   non-residential POI (TBD-PLAN: thresholds). Weight = footprint area × floors (floors default 1).
-   Allocate each block group's ACS population to its buildings by weight. Fallback when a block group
-   has no qualifying buildings: regular point grid over the block group.
+2. **Walk network** (`sql/20_network.sql`). Every Overture road segment except `class = motorway`
+   (trunk = urban Carson/William St, kept), and except segments with a foot denial (`denied`, no
+   `heading`, mode absent or `foot`) that no rule allows (`allowed`/`designated` for foot/all modes;
+   `as_private` counts as allowed). Rules with `between` apply to the whole segment (limitation).
+   Topology: split each segment at its connectors (`ST_LineSubstring` between consecutive `at`) →
+   `edges(id, source, target, cost_m, …)`, undirected, connector UUIDs → bigint `vertices`. Only the
+   **largest connected component** (`edges.main`, 98.8 % of length here) is used. Roads without a
+   mapped sidewalk are walkable (Overture has 2,165 sidewalk / 1,685 crosswalk segments; limitation).
+3. **Snap** origins and destinations to the **nearest main edge** (not vertex: blocks are 100–200 m):
+   `edge_id`, `frac`, `snap_m`. Flag snaps > 200 m. Destinations become virtual nodes with two edges
+   to their edge's ends (cost = snap + along-edge part).
+4. **Distances** (`sql/50_distances.sql`). Per service: super-source → all destination nodes (cost 0),
+   single-source `pgr_drivingDistance` to 1600 m → nearest-destination distance per vertex. Origin
+   distance = `snap_m + min(d(source) + frac·len, d(target) + (1−frac)·len)`, or direct along the edge
+   when a destination shares it. Parks: boundary points every 25 m within 30 m of a main edge, plus
+   park POIs; `group_key` = one park. Transit: GTFS stops. Per-destination 400 m reach
+   (non-equicost `pgr_drivingDistance`) gives the `n_400m` counts.
+5. **Population allocation (dasymetric)** (`sql/30_origins.sql`). Residential = Overture residential
+   classes (incl. `static_caravan` = mobile homes; not garages), plus unclassified footprints of
+   40–1,500 m² with no open non-residential place inside. Weight = area × floors, floors =
+   `num_floors`, else `round(height / 3.5)`, min 1. Allocate each block group's ACS population by
+   weight (building → BG by `ST_PointOnSurface`). Fallback: 50 m point grid for a populated BG with no
+   homes. Thresholds live in `scoring.yaml` `residential:`. Band scoring and aggregation run in Python
+   (`scoring.py`, tested), not SQL.
 6. **Per block group metrics** (one row per block group):
    - `pop_total`, ACS equity fields (+MOE), tract GEOID, neighborhood name if available
    - for each service `s`: `<s>_score` (population-weighted mean of band value × 100),
@@ -296,10 +307,14 @@ Resolved in Phase 1 planning (2026-10-30):
 7. ~~Makefile / driver~~ → **CLI-driven**: `python -m urban_access.cli <step> --city <slug>`; the
    Makefile calls the CLI; notebooks call the same `src/` functions and add checks and plots. No papermill.
 
+Resolved in Phase 2 planning (2026-10-30):
+
+2. ~~Walkable filter / components~~ → drop motorways and foot-denied segments; keep trunk and
+   `as_private`; largest component only (§6 Phase 2 step 2).
+3. ~~Residential heuristic~~ → residential classes incl. mobile homes + unclassified 40–1,500 m²
+   without a non-residential place; weight area × floors (§6 Phase 2 step 5).
+
 Still open:
 
-2. Walkable segment filter and connected-component handling (Phase 2; see the class/subclass table in nb 01).
-3. Residential-building heuristic thresholds; what to do with mobile-home parks / large lots (Phase 2;
-   2,279 `static_caravan` buildings, 14,787 unclassified with median footprint 148 m²).
 6. Basemap provider; colour ramp and class breaks.
 8. Optional: H3 summary layer or a second city to prove the config is portable.
