@@ -77,6 +77,31 @@ xcheck:
   schools:                        # NCES EDGE (public, CCD) + PSS (private); school years, newest first
     public_year: "2425"
     private_years: ["2324", "2122"]   # PSS is a survey: non-respondents are filled from the older year
+  grocery:                        # USDA SNAP authorized retailers (live ArcGIS layer)
+    url: "https://services1.arcgis.com/RLQu0rK7h4kbsBq5/arcgis/rest/services/snap_retailer_location_data/FeatureServer/0"
+    confirm_m: 250                # big stores: SNAP points often sit on the parking lot or parcel
+    full_service: ["Supermarket", "Super Store"]   # SNAP "Grocery Store" also covers pizza and meat shops
+  healthcare:                     # CMS NPPES organization NPIs (geocoded) + HRSA health center sites
+    nppes_url: "https://npiregistry.cms.hhs.gov/api/"
+    geocoder_url: "https://geocoding.geo.census.gov/geocoder/locations/addressbatch"
+    hrsa_url: "https://data.hrsa.gov/DataDownload/DD_Files/Health_Center_Service_Delivery_and_LookAlike_Sites.csv"
+    overture_taxonomy: [health_care]
+    min_name_similarity: 0.75    # stricter: parent systems ("Carson Tahoe Regional …") share words
+    site_m: 60                    # NPPES orgs this close to a place are listed as site context
+    essential_taxonomy:           # NUCC code prefixes = the healthcare service definition
+      - "207Q"                    # family medicine
+      - "207R00000X"              # internal medicine (general only)
+      - "208D"                    # general practice
+      - "208000000X"              # pediatrics (general only)
+      - "261QP2300X"              # clinic: primary care
+      - "261QU0200X"              # clinic: urgent care
+      - "261QF0400X"              # clinic: federally qualified health center
+      - "261QR1300X"              # clinic: rural health
+      - "282N"                    # general acute care hospital
+      - "3336"                    # pharmacy
+  parks:                          # city park polygons (url in the city config)
+    categories: ["PARK", "SPORT"] # city categories that count as parks (not open space, golf …)
+    exclude_names: ["rifle", "pistol", "gun club"]
 
 # Web map (src/urban_access/export.py → docs/data/<slug>_summary.json → docs/app.js)
 web:

@@ -127,6 +127,10 @@ def apply_place_overrides(
             out.loc[i, "geometry"] = (
                 gpd.GeoSeries([Point(o.lon, o.lat)], crs=4326).to_crs(out.crs).iloc[0]
             )
+        if o.verified:
+            out.loc[i, "confidence"] = 1.0
+        if o.name:
+            out.loc[i, "name"] = o.name
         out.loc[i, "override"] = o.note or ("drop" if o.drop else "moved")
         out.loc[i, "drop"] = o.drop
     return out

@@ -25,18 +25,36 @@ the bbox), buffered 2 km so services just outside still count.
 | Overture places (`places/place`) | 4,858 | [Overture Maps](https://overturemaps.org), release `2026-10-21.0` | CDLA-Permissive-2.0 |
 | Overture buildings | 38,554 | Overture `buildings/building` | ODbL (OSM-derived) |
 | Overture road segments / connectors | 16,650 / 24,430 | Overture `transportation` | ODbL |
-| Overture park land use | 98 polygons | Overture `base/land_use` (park, dog park, playground, recreation ground) | ODbL |
+| Overture park land use | 98 polygons (+ 11 city polygons, see below) | Overture `base/land_use` (park, dog park, playground, recreation ground) | ODbL |
 | Census block groups | 80 (46 scored: 40 Carson City, 6 Douglas County) | TIGER/Line 2024 via [pygris](https://github.com/walkerke/pygris) | Public domain |
 | ACS 5-year 2020–2024 | 80 block groups | [Census API](https://www.census.gov/data/developers/data-sets/acs-5year.html): population, age (B01001), income (B19013), vehicles (B25044), income-to-poverty ratio (C17002), with MOEs | Public domain |
 | OSM gates and fences | 300 gates / 302 fence lines | [Overpass API](https://overpass-api.de), fetched 2026-10-30 (`barrier=*`) | ODbL, © OpenStreetMap contributors |
 | NCES school lists (cross-check) | 19 schools (13 public, 6 private) | [NCES EDGE](https://nces.ed.gov/programs/edge/) public school locations + administrative data 2024-25 (grade span, status); [Private School Universe Survey](https://nces.ed.gov/surveys/pss/) 2023-24, 2021-22 for non-respondents | Public domain |
+| USDA SNAP authorized retailers (cross-check) | 54 retailers | [SNAP retailer locations](https://www.fns.usda.gov/snap/retailer-locator) (live ArcGIS layer), fetched 2026-10-31 | Public domain |
+| CMS NPPES organizations (cross-check) | 732 NPIs in 5 ZIP codes, 416 geocoded inside the extent | [NPI Registry API](https://npiregistry.cms.hhs.gov/api-page), geocoded with the [Census Geocoder](https://geocoding.geo.census.gov/), fetched 2026-10-31 | Public (CMS); geocoder public domain |
+| HRSA health center sites (cross-check) | 3 sites | [data.hrsa.gov](https://data.hrsa.gov/data/download) service delivery sites | Public domain |
+| Carson City parks | 110 polygons (11 added to the parks layer) | Carson City GIS "Carson City Parks and Open Space" (2023) | No licence stated; used with attribution |
 | JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
 
 Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
 overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart `department_store`).
 Places checked on the ground are dropped or moved one by one (`place_overrides`, keyed by Overture id):
 for groceries, one Walmart is now a Ross store, three listed stores don't exist, and one point was moved
-to its store, which leaves 12 full-service grocery stores.
+to its store. A cross-check with USDA SNAP authorized retailers (`make xcheck`) confirmed 11 of those
+12 stores and found two full-service markets Overture tags as a restaurant and a butcher (Hacienda
+Market and Grill, Centro Market); Kabayan Asian Multi Mart, absent from SNAP, was dropped as not
+full-service, which leaves 13 grocery stores. SNAP store types alone weren't enough: its "Grocery
+Store" type also covers a pizza chain and a meat shop, and one SNAP address was wrong.
+Healthcare was checked against the CMS NPI registry (organizations, geocoded) and HRSA health center
+sites: a place counts when an organization with a matching name at that site has a primary-care,
+urgent-care, general-hospital or pharmacy taxonomy. That removed 4 specialists Overture tags as
+clinics or hospitals (endoscopy, cardiology, oncology, medical equipment), added 8 places Overture
+tags `doctors_office` / `health_care` / outpatient (an urgent care, family and internal medicine
+practices, and the main hospital), and counts the in-store pharmacies of Raley's, Smith's and Costco.
+A field check then removed four Carson Tahoe clinic records that have closed (the two Walmart
+clinics and two physician-clinic sites, one of them added from the registry, which still lists it),
+which leaves 29 places. Sites the registry geocodes far from the Overture point (big stores) are kept
+but not confirmed; pharmacies inside a big store use the store's own point.
 Schools were checked against NCES (`make xcheck`): a school counts if it is open, not online-only,
 and teaches any of grades K-8. 13 of the 14 schools first selected matched an NCES school with a K-8
 grade span, within about 100 m. The 14th, Capital Christian School, has no NCES record; Overture lists
@@ -44,6 +62,9 @@ the same site again as Legacy Christian Academy, which NCES has as K-8, so the o
 Overture also missed two schools that teach K-8 grades: Grace Christian Academy (tagged
 `private_school`) and iSchool (grades 1-12, tagged `college_counseling`). That leaves 16 schools.
 Overture has no grade levels, so without NCES the private schools' grades could not be checked.
+Parks combine Overture land use with 11 Carson City GIS park polygons that Overture lacks (e.g.
+Mayor's Park, Imus Park, Lone Mountain Park); the city layer covers Carson City only, so Douglas
+County parks come from Overture alone.
 Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
 
 ACS caveat: at block-group level the coefficient of variation is above 30 % in 34 of the 45 populated
@@ -108,28 +129,28 @@ that Overture tags as general clinics.
 All numbers are for the 62,051 residents of the 45 populated scored block groups. Ranges in brackets
 are the 5th–95th percentiles of 1,000 Monte Carlo draws from the ACS margins of error.
 
-**A 5-minute walk to a grocery store is rare.** 1,290 residents (2.1 % [1.9–2.3]) live within 400 m
-of one of the 12 full-service grocery stores, measured along the walking network; 41.1 % have none
+**A 5-minute walk to a grocery store is rare.** 1,260 residents (2.0 % [1.8–2.2]) live within 400 m
+of one of the 13 full-service grocery stores, measured along the walking network; 47.1 % have none
 within 1,600 m (about 20 minutes). Another 3,690 (5.9 %) have a convenience store but no grocery
 within 400 m. Transit is the most walkable service (32.7 % within 400 m of a JAC stop), then parks
-(23.0 %); healthcare (2.2 %) and K-8 schools (3.6 %) are as rare as groceries.
+(26.9 %); healthcare (2.5 %) and K-8 schools (3.6 %) are as rare as groceries.
 
 **Access is better where incomes are lower.** The lowest-income third of residents (block-group median
-household income $34k–61k) has a mean access score of 47.9; the highest-income third ($82k–143k) has
-23.3. Across block groups, Spearman ρ between the access score and median household income is −0.59
-(MC range −0.59 to −0.30), and +0.45 with the share of residents below 200 % of the poverty line.
+household income $34k–61k) has a mean access score of 48.1; the highest-income third ($82k–143k) has
+23.7. Across block groups, Spearman ρ between the access score and median household income is −0.59
+(MC range −0.60 to −0.31), and +0.49 with the share of residents below 200 % of the poverty line.
 Residents below that line are more likely than average to be within 400 m of a transit stop (46.4 %
-[42.7–50.0] vs 32.7 %) and of a grocery store (3.1 % vs 2.1 %); so are households without a car
-(43.5 % and 3.8 %).
+[42.7–50.0] vs 32.7 %) and of a grocery store (3.5 % vs 2.0 %); so are households without a car
+(43.5 % and 3.3 %).
 
 **Older residents have less access.** 1.6 % [1.3–1.8] of residents 65+ live within 400 m of a
-grocery store, and their mean access score is 31.3 against 34.4 for all residents (ρ with the 65+
-share: −0.34).
+grocery store, and their mean access score is 31.5 against 34.8 for all residents (ρ with the 65+
+share: −0.35).
 
-**Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.64,
-p = 0.0001, 9,999 permutations). Local Moran's I finds 8 low-low block groups at p < 0.05 (6 after a
-false-discovery-rate correction), all between 39.03 °N and 39.12 °N: the Douglas County block groups
-and two at the south end of Carson City. The 7 high-high block groups (2 after correction) lie further
+**Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.65,
+p = 0.0001, 9,999 permutations). Local Moran's I finds 9 low-low block groups at p < 0.05 (5 after a
+false-discovery-rate correction), all between 39.03 °N and 39.15 °N: the Douglas County block groups
+and three in the south of Carson City. The 7 high-high block groups (4 after correction) lie further
 north, at 39.17–39.18 °N.
 
 These are block-group comparisons (ecological inference): a group is assumed to live in its block

@@ -24,6 +24,7 @@ ATTRIBUTION = [
     "Gates and fences: © OpenStreetMap contributors (ODbL)",
     "Block groups and ACS: US Census Bureau",
     "Transit stops: Jump Around Carson (GTFS)",
+    "Service checks: NCES, USDA SNAP, CMS NPPES, HRSA, US Census Geocoder",
 ]
 BASEMAP_ATTRIBUTION = "Basemap: OpenFreeMap © OpenMapTiles © OpenStreetMap contributors"
 # ACS estimate → (MOE column for the badge's CV, count column the CV is computed from)
@@ -116,7 +117,12 @@ def summary(
         "services": sc.scored_services,
         "bands": [{"max_m": m, "value": v} for m, v in sc.bands],
         "web": sc.web,
-        "attribution": ATTRIBUTION,
+        "attribution": ATTRIBUTION
+        + (
+            [f"Some park areas: {cfg.xcheck.get('city_parks_source', 'city GIS')}"]
+            if cfg.extra_parks
+            else []
+        ),
         "basemap_attribution": BASEMAP_ATTRIBUTION,
         "headline": [
             {k: (round(v, 1) if isinstance(v, float) else v) for k, v in h.items()}

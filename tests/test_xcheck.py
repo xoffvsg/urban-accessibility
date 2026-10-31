@@ -7,8 +7,12 @@ from urban_access.xcheck import (
     MOVED,
     OVERTURE_ONLY,
     SOURCE_ONLY,
+    city_park_additions,
+    health_sources,
+    is_essential,
     match,
     name_similarity,
+    suggest_flag,
     suggest_school,
 )
 
@@ -74,3 +78,109 @@ def test_match_is_one_to_one():
 )
 def test_suggest_school(status, in_service, serves, open_, out):
     assert suggest_school(status, in_service, serves, open_) == out
+
+
+@pytest.mark.parametrize(
+    ("a", "b", "same"),
+    [
+        ("Smith's", "SMITHS FOOD & DRUG 356", True),
+        ("Walmart", "Walmart 3408", True),
+        ("Foodmaxx", "Food Maxx 449", True),
+        ("Sierra Family Health Center", "HEALTH CO", False),  # one weak shared word
+        ("Carson Tahoe Cardiology", "CARSON TAHOE REGIONAL HEALTHCARE", False),
+    ],
+)
+def test_name_similarity_stores_and_clinics(a, b, same):
+    threshold = 0.75 if "Carson" in a else 0.6
+    assert (name_similarity(a, b) >= threshold) is same
+
+
+@pytest.mark.parametrize(
+    ("status", "in_service", "qualifies", "out"),
+    [
+        (CONFIRMED, True, True, "ok"),
+        (CONFIRMED, False, True, "add"),
+        (CONFIRMED, True, False, "drop"),
+        (MOVED, False, True, "review"),  # name only, far away: never add on that
+        (MOVED, True, False, "review"),
+        (MOVED, False, False, "ok"),
+        (OVERTURE_ONLY, True, False, "review"),
+        (SOURCE_ONLY, False, True, "missing"),
+    ],
+)
+def test_suggest_flag(status, in_service, qualifies, out):
+    assert suggest_flag(status, in_service, qualifies) == out
+
+
+def test_is_essential():
+    prefixes = ["207Q", "207R00000X", "3336"]
+    assert is_essential("207Q00000X", prefixes)  # family medicine
+    assert is_essential("207R00000X", prefixes)  # internal medicine, general
+    assert not is_essential("207RC0000X", prefixes)  # cardiovascular disease
+    assert is_essential("3336C0003X", prefixes)  # community pharmacy
+    assert not is_essential(None, prefixes)
+
+
+def test_health_sources_explodes_names():
+    nppes_orgs = gpd.GeoDataFrame(
+        {
+            "source_id": ["1"],
+            "name": ["NEVADA CVS PHARMACY LLC"],
+            "other_names": ["CVS PHARMACY #08779; CVS 8779"],
+            "taxonomy_code": ["3336C0003X"],
+            "taxonomy": ["Pharmacy"],
+            "address": ["x"],
+        },
+        geometry=[Point(-119.76, 39.15)],
+        crs=4326,
+    )
+    hrsa = gpd.GeoDataFrame(
+        {
+            "source_id": ["h1", "h2"],
+            "name": ["Clinic", "Van"],
+            "site_type": ["Permanent", "Mobile Van"],
+            "setting": ["All Other Clinic Types", "All Other Clinic Types"],
+            "status": ["Active", "Active"],
+            "address": ["y", "y"],
+        },
+        geometry=[Point(-119.75, 39.18)] * 2,
+        crs=4326,
+    )
+    s = health_sources(nppes_orgs, hrsa, ["3336"])
+    assert sorted(s.loc[s["source"] == "nppes", "name"]) == [
+        "CVS 8779",
+        "CVS PHARMACY #08779",
+        "NEVADA CVS PHARMACY LLC",
+    ]
+    assert s.loc[s["source"] == "nppes", "essential"].all()
+    assert dict(
+        zip(
+            s.loc[s["source"] == "hrsa", "name"],
+            s.loc[s["source"] == "hrsa", "essential"],
+            strict=True,
+        )
+    ) == {
+        "Clinic": True,
+        "Van": False,
+    }
+
+
+def test_city_park_additions():
+    from shapely.geometry import box
+
+    city = gpd.GeoDataFrame(
+        {
+            "name": ["Covered Park", "New Park", "Gun Club", "Open Hills"],
+            "category": ["PARK", "PARK", "SPORT", "OPEN SPACE"],
+        },
+        geometry=[
+            box(0, 0, 100, 100),
+            box(500, 0, 600, 100),
+            box(1000, 0, 1100, 100),
+            box(2000, 0, 2100, 100),
+        ],
+        crs=EPSG,
+    )
+    overture = gpd.GeoDataFrame({"name": ["x"]}, geometry=[box(50, 50, 150, 150)], crs=EPSG)
+    add = city_park_additions(city, overture, ["PARK", "SPORT"], ["gun club"], EPSG)
+    assert list(add) == [False, True, False, False]

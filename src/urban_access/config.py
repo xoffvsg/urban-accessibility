@@ -113,6 +113,8 @@ class PlaceOverride:
     drop: bool = False
     lon: float | None = None
     lat: float | None = None
+    verified: bool = False  # confirmed by an outside source: confidence set to 1.0
+    name: str | None = None  # corrected name (field check)
     note: str = ""
 
 
@@ -192,6 +194,8 @@ class CityConfig:
     blocked_segments: dict[str, str] = field(default_factory=dict)  # segment id → note
     gated_areas_path: Path | None = None  # GeoJSON polygons with name / exits / note
     gates_path: Path | None = None  # GeoJSON lines drawn across gates: status open|closed, note
+    xcheck: dict[str, Any] = field(default_factory=dict)  # city-specific cross-check settings
+    extra_parks: bool = False  # add city park polygons (xcheck.city_parks_url) to the parks layer
 
     @property
     def raw_dir(self) -> Path:
@@ -278,7 +282,7 @@ def parse_place_overrides(raw: dict[str, Any] | None) -> dict[str, PlaceOverride
     for key, v in (raw or {}).items():
         key = str(key)
         v = dict(v or {})
-        unknown = set(v) - {"drop", "lon", "lat", "note"}
+        unknown = set(v) - {"drop", "lon", "lat", "verified", "name", "note"}
         if unknown:
             raise ConfigError(f"place_overrides[{key}]: unknown keys {sorted(unknown)}")
         if len(key) < 8:
@@ -289,10 +293,14 @@ def parse_place_overrides(raw: dict[str, Any] | None) -> dict[str, PlaceOverride
             drop=bool(v.get("drop", False)),
             lon=float(v["lon"]) if "lon" in v else None,
             lat=float(v["lat"]) if "lat" in v else None,
+            verified=bool(v.get("verified", False)),
+            name=str(v["name"]) if v.get("name") else None,
             note=str(v.get("note", "")),
         )
-        if not o.drop and o.lon is None:
-            raise ConfigError(f"place_overrides[{key}]: needs drop: true or lon/lat")
+        if not o.drop and o.lon is None and not o.verified:
+            raise ConfigError(
+                f"place_overrides[{key}]: needs drop: true, lon/lat or verified: true"
+            )
         out[key] = o
     return out
 
@@ -406,6 +414,8 @@ def parse_city(raw: dict[str, Any], scoring_raw: dict[str, Any]) -> CityConfig:
             CONFIG_DIR / "cities" / str(raw["gated_areas"]) if raw.get("gated_areas") else None
         ),
         gates_path=CONFIG_DIR / "cities" / str(raw["gates"]) if raw.get("gates") else None,
+        xcheck=dict(raw.get("xcheck") or {}),
+        extra_parks=bool(raw.get("extra_parks", False)),
     )
 
 

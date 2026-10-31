@@ -12,6 +12,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
 
+from . import xcheck
 from .config import REPO_ROOT, CityConfig, settings
 from .services import ASSIGNED, classify_places
 
@@ -23,7 +24,6 @@ TABLES: dict[str, tuple[str, str | None]] = {
     "buildings": ("buildings.parquet", "PROMOTE_TO_MULTI"),
     "segments": ("segments.parquet", "LINESTRING"),
     "connectors": ("connectors.parquet", "POINT"),
-    "parks": ("parks.parquet", "PROMOTE_TO_MULTI"),
     "neighborhoods": ("neighborhoods.parquet", "PROMOTE_TO_MULTI"),
 }
 # loaded when present (sql/20_network.sql creates empty stand-ins otherwise)
@@ -158,6 +158,39 @@ def build_block_groups(cfg: CityConfig) -> gpd.GeoDataFrame:
     return bg
 
 
+def build_parks(cfg: CityConfig) -> gpd.GeoDataFrame:
+    """Overture park polygons, plus city park polygons that overlap none of them (`extra_parks`)."""
+    parks = gpd.read_parquet(cfg.raw_dir / "parks.parquet").to_crs(4326)
+    parks["source"] = "overture"
+    city_path = cfg.raw_dir / "city_parks.parquet"
+    if not cfg.extra_parks:
+        return parks
+    if not city_path.exists():
+        raise FileNotFoundError(
+            f"extra_parks is set but {city_path} is missing: run make xcheck SOURCE=parks"
+        )
+    city = gpd.read_parquet(city_path).to_crs(4326)
+    xp = cfg.scoring.xcheck["parks"]
+    add = city[
+        xcheck.city_park_additions(
+            city, parks, xp["categories"], xp["exclude_names"], cfg.analysis_epsg
+        )
+    ]
+    extra = gpd.GeoDataFrame(
+        {
+            "id": "city:" + add["source_id"],
+            "name": add["name"],
+            "subtype": "city",
+            "class": add["category"].str.lower(),
+            "source": cfg.xcheck.get("city_parks_source", "city GIS"),
+        },
+        geometry=add.geometry.values,
+        crs=4326,
+    )
+    print(f"[load] parks: {len(parks)} Overture + {len(extra)} city polygons")
+    return gpd.GeoDataFrame(pd.concat([parks, extra], ignore_index=True), crs=4326)
+
+
 def load_all(cfg: CityConfig) -> dict[str, float]:
     """Create the schema and load every input table; returns seconds per table."""
     cfg.ensure_dirs()
@@ -166,6 +199,7 @@ def load_all(cfg: CityConfig) -> dict[str, float]:
     interim = {
         "block_groups": (build_block_groups(cfg), "PROMOTE_TO_MULTI"),
         "service_points": (build_service_points(cfg), "POINT"),
+        "parks": (build_parks(cfg), "PROMOTE_TO_MULTI"),
     }
     for table, (gdf, nlt) in interim.items():
         path = cfg.interim_dir / f"{table}.parquet"

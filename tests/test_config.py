@@ -123,3 +123,17 @@ def test_gates_path(city_raw, scoring_raw):
     raw = copy.deepcopy(city_raw)
     raw.pop("gates")
     assert parse_city(raw, scoring_raw).gates_path is None
+
+
+def test_place_override_verified():
+    from urban_access.config import parse_place_overrides
+
+    o = parse_place_overrides({"62fed2a0-adad": {"verified": True, "note": "NPPES"}})
+    assert o["62fed2a0-adad"].verified and not o["62fed2a0-adad"].drop
+
+
+def test_place_override_name():
+    from urban_access.config import parse_place_overrides
+
+    o = parse_place_overrides({"0eb6007c-cb59": {"drop": True, "name": "Cancer Center"}})
+    assert o["0eb6007c-cb59"].name == "Cancer Center"

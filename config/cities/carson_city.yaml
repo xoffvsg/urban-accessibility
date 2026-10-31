@@ -29,10 +29,18 @@ transit:
 # Set from data/interim/<slug>/service_review.csv (notebook 00).
 services:
   grocery:
-    include_names: ["^walmart$", "^target$", "^costco$", "^grocery outlet", "^raley'?s", "^trader joe'?s"]
+    # + full-service markets Overture tags as restaurants / butchers (SNAP; field check 2026-10-31)
+    include_names: ["^walmart$", "^target$", "^costco$", "^grocery outlet", "^raley'?s", "^trader joe'?s",
+                    "^hacienda market", "^centro market$"]
     exclude_names: ["grocery pickup", "popcorn", "am ?pm", "liquor"]
   healthcare:
-    include_names: ["^sierra family health center"]   # primary care tagged doctors_office
+    # primary / urgent care and a hospital under other tags, confirmed by NPPES taxonomy at the site,
+    # and in-store pharmacies (NPPES); see `make xcheck SOURCE=healthcare` (2026-10-31)
+    include_names: ["^sierra family health center", "^concentra urgent care",
+                    "^carson tahoe regional medical center$", "^desert valley family practice",
+                    "^servanna health$", "^merritt w\\.? dunlap",
+                    "^david a\\.? johnson, md", "^andrea k\\.? weed",
+                    "^raley'?s$", "^smith'?s$", "^costco$"]
     exclude_names: ["d\\.?d\\.?s", "dental", "marketers", "hometown health", "medical capital",
                     "behavioral health"]
   schools:
@@ -47,13 +55,33 @@ services:
 
 # Field-checked fixes for single places, keyed by Overture place id (full id or a unique prefix of
 # at least 8 characters; `ref` in service_review.csv and service_points is the 8-character prefix).
-# drop: true removes the place from every service; lon/lat (WGS84) moves it. Applied before matching.
+# drop: true removes the place from every service; lon/lat (WGS84) moves it; verified: true marks a
+# place confirmed by an outside source (confidence 1.0, so the confidence cut doesn't drop it);
+# name: corrects the place name.
+# Applied before matching.
 place_overrides:
   245a2ecf-041c-4e1e-ba16-8ef661b5762f: {drop: true, note: "Walmart: now a Ross store (checked 2026-10-30)"}
   04d8348a-7589-4aee-91c0-190002195402: {drop: true, note: "Grocery Outlet: does not exist (checked 2026-10-30)"}
   003309e4-3db9-4585-bdc8-7599b2d2650c: {drop: true, note: "Foothill Market: does not exist (checked 2026-10-30)"}
   191f0225-ce09-4319-8c54-8b8c05813e59: {drop: true, note: "Save Mart: does not exist (checked 2026-10-30)"}
   fddcf37b-a00a-47ee-b3ed-a179861e239b: {drop: true, note: "Capital Christian School: same site as Legacy Christian Academy (NCES PSS 2023-24, K-8); one school (checked 2026-10-31)"}
+  714ac3d7-8275-4c48-9d0f-f79f76b302d4: {drop: true, note: "Kabayan Asian Multi Mart: not a full-service grocery, not in SNAP (checked 2026-10-31)"}
+  511d2346-4654-44ed-b12f-1db019334f2f: {drop: true, note: "Centro Market: duplicate at the SNAP address, which is wrong; the store is 7b20261f (checked 2026-10-31)"}
+  7b20261f-9cd0-40aa-af6f-1081a4f4f95c: {lon: -119.731377, lat: 39.178445, note: "Centro Market: full-service grocery, moved to the store (checked 2026-10-31)"}
+  61533982-21a1-49b3-9e19-ef6884e98670: {drop: true, note: "Carson Endoscopy Center: NPPES endoscopy clinic, specialist (2026-10-31)"}
+  01c77477-f2a2-454a-bb5e-296b1dcd59ca: {drop: true, note: "Carson Tahoe Cardiology: NPPES cardiovascular disease, specialist (2026-10-31)"}
+  0eb6007c-cb59-4758-a041-01d1eed51a14: {drop: true, name: "Carson Tahoe Cancer Center", note: "1535 Medical Pkwy: the Carson Tahoe Cancer Center (NPPES hematology & oncology), specialist; same as 5492dfc9 (checked 2026-10-31)"}
+  524e0a48-90ed-47a4-acfa-9fac4245cc5c: {drop: true, note: "Swift Institute: NPPES medical equipment supplier, not care (2026-10-31)"}
+  a12704bd-ca8a-4cf8-b33b-5da63d3ab25a: {drop: true, note: "Andrea K. Weed DO: duplicate of 712c8b25 (2026-10-31)"}
+  62fed2a0-adad-4d04-ad24-367e86eb05dc: {verified: true, note: "Servanna Health: NPPES family medicine at the site (Overture confidence 0.2) (2026-10-31)"}
+  # in-store pharmacies share their store's point (one entrance, one walk)
+  f7a6f67b-08ee-4b49-9cd5-c9e9102b4c66: {lon: -119.778277, lat: 39.111867, note: "Walmart Pharmacy: moved to its Walmart store point (990f520a, US 395 S) (2026-10-31)"}
+  b24cb09d-d060-45ee-90ce-54b8da365c8b: {lon: -119.75753, lat: 39.187265, note: "Walmart Pharmacy: moved to its Walmart store point (16030ee4, Market St) (2026-10-31)"}
+  f0913f6f-5997-49b8-a051-487900268942: {drop: true, note: "Clinic at Walmart, Market Street: permanently closed, no clinic in the store (checked 2026-10-31)"}
+  f2676f72-2ab8-4fa0-8946-1e003adb32b5: {drop: true, note: "Carson Tahoe Physician Clinic at Walmart: permanently closed, as is the US 395 Walmart clinic (checked 2026-10-31)"}
+  56a36b1f-177f-413b-acae-ece80c0ab4ee: {drop: true, note: "Carson Tahoe Retail Clinic At Walmart (US 395): permanently closed (checked 2026-10-31)"}
+  256d4983-3df6-47eb-b5df-e85c54d55e40: {drop: true, note: "Carson Tahoe Physician Clinics: closed; the only one left is the Cancer Center at 1535 Medical Pkwy (checked 2026-10-31)"}
+  946eac16-b781-44ac-96c1-0487e7126d08: {drop: true, note: "Carson Tahoe Physician: closed; the only Carson Tahoe physician clinic left is the Cancer Center (checked 2026-10-31)"}
   9bb486d2-af18-44a9-a2b2-d251aff25620: {lon: -119.754751, lat: 39.187078, note: "Sprouts Farmers Market: moved to the store (checked 2026-10-30)"}
 
 # Segments closed to walkers in reality but not in Overture (fences, locked gates), by Overture
@@ -71,3 +99,13 @@ gated_areas: carson_city_gated_areas.geojson
 # link between the nearest edges at its two ends, and it is an exit through any gated-area boundary.
 # OSM gates tagged access=no / foot=no are closed automatically (osm step); others are reference only.
 gates: carson_city_gates.geojson
+
+# Cross-checks with open data (`make xcheck SOURCE=all`; method settings in scoring.yaml xcheck:).
+xcheck:
+  nppes_postal_codes: ["89701", "89703", "89705", "89706", "89423"]
+  # Carson City GIS "Carson City Parks and Open Space" (2023; Carson City only; no licence stated,
+  # used with attribution). Polygons in the scoring.yaml xcheck.parks categories that overlap no
+  # Overture park are added to the parks layer (city decision 2026-10-31).
+  city_parks_url: "https://services5.arcgis.com/C0ejqMIMxJZHALms/arcgis/rest/services/Parks_and_Trails/FeatureServer/2"
+  city_parks_source: "Carson City GIS"
+extra_parks: true                 # add the city park polygons above to the parks layer

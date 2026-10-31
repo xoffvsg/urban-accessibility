@@ -16,6 +16,7 @@ import geopandas as gpd
 import pandas as pd
 import requests
 
+from . import arcgis
 from .census import write_meta
 from .config import BBox, CityConfig
 
@@ -63,36 +64,17 @@ def serves_k8(lo: float | None, hi: float | None) -> bool:
     return lo <= K8[1] and hi >= K8[0]
 
 
-def _query(service: str, layer: int, params: dict[str, str]) -> list[dict]:
-    url = f"{EDGE_URL}/{service}/MapServer/{layer}/query"
-    r = requests.get(url, params={"outFields": "*", "f": "json", **params}, timeout=120)
-    r.raise_for_status()
-    d = r.json()
-    if "error" in d:
-        raise RuntimeError(f"NCES {service}: {d['error']}")
-    if d.get("exceededTransferLimit"):
-        raise RuntimeError(f"NCES {service}: too many features for one request")
-    return [f["attributes"] for f in d.get("features", [])]
-
-
 def public_schools(extent: BBox, year: str) -> gpd.GeoDataFrame:
-    env = {
-        "geometry": f"{extent.lon_min},{extent.lat_min},{extent.lon_max},{extent.lat_max}",
-        "geometryType": "esriGeometryEnvelope",
-        "inSR": "4326",
-        "spatialRel": "esriSpatialRelIntersects",
-        "returnGeometry": "false",
-    }
-    loc = pd.DataFrame(_query(f"EDGE_GEOCODE_PUBLICSCH_{year}", 0, env))
+    loc = arcgis.query(
+        f"{EDGE_URL}/EDGE_GEOCODE_PUBLICSCH_{year}/MapServer/0", extent=extent, geometry=False
+    )
     if loc.empty:
         return _empty()
     ids = ",".join(f"'{i}'" for i in loc["NCESSCH"])
-    adm = pd.DataFrame(
-        _query(
-            f"EDGE_ADMINDATA_PUBLICSCH_{year}",
-            1,
-            {"where": f"NCESSCH IN ({ids})", "returnGeometry": "false"},
-        )
+    adm = arcgis.query(
+        f"{EDGE_URL}/EDGE_ADMINDATA_PUBLICSCH_{year}/MapServer/1",
+        where=f"NCESSCH IN ({ids})",
+        geometry=False,
     )
     df = loc.merge(adm, on="NCESSCH", how="left", suffixes=("", "_adm"))
     out = pd.DataFrame(

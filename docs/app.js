@@ -233,7 +233,7 @@ async function main() {
   map = new maplibregl.Map({
     container: "map", style: S.web.basemap_style,
     bounds: [[S.bounds[0], S.bounds[1]], [S.bounds[2], S.bounds[3]]], fitBoundsOptions: { padding: 30 },
-    attributionControl: { compact: true, customAttribution: "Data: Overture Maps, OpenStreetMap, US Census Bureau, JAC" },
+    attributionControl: { compact: true, customAttribution: "Data: Overture Maps, OpenStreetMap, US Census Bureau, JAC, Carson City GIS" },
   });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
   map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-right");

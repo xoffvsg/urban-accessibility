@@ -100,7 +100,9 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--city", default=default_city(), help="config/cities/<slug>.yaml")
     p.add_argument("--force", action="store_true", help="re-download even if outputs exist")
     p.add_argument("--only", nargs="+", help="extract: subset of outputs (e.g. places parks)")
-    p.add_argument("--source", default="schools", help="xcheck: source to compare (schools)")
+    p.add_argument(
+        "--source", default="schools", help="xcheck: schools | grocery | healthcare | parks | all"
+    )
     args = p.parse_args(argv)
     cfg = load_city(args.city)
     print(

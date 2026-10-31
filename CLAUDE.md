@@ -132,7 +132,8 @@ Urban_Accessibility/        # C:\dev\PortfolioProject4\Urban_Accessibility (GitH
 │   ├── extract.py          # DuckDB → Overture S3 → GeoParquet
 │   ├── census.py           # TIGER block groups + ACS API
 │   ├── gtfs.py             # optional GTFS stops
-│   ├── nces.py / xcheck.py # NCES school lists; cross-checks vs open data → review CSVs
+│   ├── nces.py / opendata.py / arcgis.py # NCES, SNAP, NPPES, HRSA, city parks (cross-check data)
+│   ├── xcheck.py           # cross-checks vs open data → data/interim/<slug>/xcheck_<source>.csv
 │   ├── db.py               # SQLAlchemy/psycopg engine, run .sql files, ogr2ogr loader
 │   ├── network.py          # build pgRouting graph, run distance queries
 │   ├── scoring.py          # bands, per-service scores, composite
@@ -190,6 +191,7 @@ Path pattern: `s3://overturemaps-us-west-2/release/<release>/theme=<theme>/type=
 | `gtfs_stops.parquet` | GTFS `stops.txt` | Only if `transit.gtfs_url` set. |
 | `osm_gates.parquet`, `osm_fences.parquet` | OSM via Overpass (`osm.py`, `make osm`) | Overture has no barriers. Gate points (`closed` = access=no / foot=no, not overridden by foot=yes) and fence/wall lines; live data, timestamp in `.meta.json`; ODbL. |
 | `nces_schools.parquet` | NCES EDGE REST (public: CCD locations + admin data, grade span, status) + PSS CSV (private; older year fills survey non-respondents) (`nces.py`, `make xcheck`) | Cross-check only, never a service source. `xcheck.py` pairs places by name + distance → `data/interim/<slug>/xcheck_schools.csv` (`suggestion` add/drop/review/missing); decisions go into `include_names` / `place_overrides`. Public domain. |
+| `snap_retailers.parquet`, `nppes_orgs.parquet`, `hrsa_sites.parquet`, `city_parks.parquet` | USDA SNAP (live ArcGIS layer), CMS NPI Registry API (NPI-2 by `xcheck.nppes_postal_codes`, geocoded with the Census batch geocoder), HRSA sites CSV, city parks ArcGIS layer (`xcheck.city_parks_url`) (`opendata.py`, `arcgis.py`, `make xcheck SOURCE=all`) | Cross-checks → `xcheck_<source>.csv`. Grocery full-service = SNAP Supermarket / Super Store. Healthcare is site-based, not one-to-one: a place is essential when a name-matched NPI within `confirm_m` has an essential taxonomy prefix (`scoring.yaml`). `city_parks` is also an **input**: with `extra_parks: true`, PARK/SPORT polygons overlapping no Overture park are added to `parks` (`db.build_parks`); licence not stated, attributed. `place_overrides` `verified: true` = confirmed by a source (confidence 1.0). |
 
 **Important — Overture schema change:** the `categories` column was removed from places in the
 September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.hierarchy` / `taxonomy.alternates`
@@ -231,7 +233,7 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
 4. **Distances** (`sql/50_distances.sql`). Per service: super-source → all destination nodes (cost 0),
    single-source `pgr_drivingDistance` to 1600 m → nearest-destination distance per vertex. Origin
    distance = `snap_m + min(d(source) + frac·len, d(target) + (1−frac)·len)`, or direct along the edge
-   when a destination shares it. Parks: boundary points every 25 m within 30 m of a main edge, plus
+   when a destination shares it. Parks (Overture land use + `extra_parks` city polygons): boundary points every 25 m within 30 m of a main edge, plus
    park POIs; `group_key` = one park. Transit: GTFS stops. Per-destination 400 m reach
    (non-equicost `pgr_drivingDistance`) gives the `n_400m` counts.
 5. **Population allocation (dasymetric)** (`sql/30_origins.sql`). Residential = Overture residential
