@@ -1,4 +1,4 @@
-// Headless check of docs/ served at http://localhost:8000 (make serve, in another terminal).
+// Headless check of docs/ served at http://localhost:$PORT (default 8000; make serve, in another terminal).
 // Run: NODE_PATH=$CONDA_PREFIX/lib/node_modules node scripts/check_map.js <out_dir>
 // Prints rendered feature counts, popup text and console errors; writes 4 screenshots to <out_dir>.
 const { chromium } = require("playwright");
@@ -11,12 +11,20 @@ const out = process.argv[2] || ".";
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));
 
-  await page.goto("http://localhost:8000/", { waitUntil: "load" });
+  await page.goto(`http://localhost:${process.env.PORT || 8000}/`, { waitUntil: "load" });
   await page.waitForFunction(() => typeof map !== "undefined" && map && map.loaded() && map.getLayer("bg-fill"), null, { timeout: 60000 });
   await page.waitForTimeout(4000);  // tiles + basemap
 
   const n = await page.evaluate(() => map.queryRenderedFeatures({ layers: ["bg-fill"] }).length);
   const nsvc = await page.evaluate(() => map.queryRenderedFeatures({ layers: ["services"] }).length);
+  // split dots where services share a spot; they collapse to full dots when one layer is off
+  const icons = () => page.evaluate(() => map.querySourceFeatures("svc").map((f) => f.properties.icon)
+    .filter((i) => i.includes("+")).sort());
+  const splitIcons = await icons();
+  await page.uncheck('#layers [data-svc="healthcare"]');
+  await page.waitForTimeout(300);
+  const splitNoHealth = await icons();
+  await page.check('#layers [data-svc="healthcare"]');
   const bars = await page.$$eval("#chart .bar", (b) => b.length);
   await page.screenshot({ path: `${out}/map_default.png` });
 
@@ -66,7 +74,8 @@ const out = process.argv[2] || ".";
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${out}/map_mobile.png`, fullPage: false });
 
-  console.log(JSON.stringify({ block_groups_rendered: n, services_rendered: nsvc, chart_bars: bars,
+  console.log(JSON.stringify({ block_groups_rendered: n, services_rendered: nsvc, split_icons: splitIcons, split_without_healthcare: splitNoHealth,
+    chart_bars: bars,
     before, first_bar_grocery_only: firstBar, grocery_weight: pctGrocery, sliders,
     popup: popup && popup.slice(0, 400), errors }, null, 1));
   await browser.close();

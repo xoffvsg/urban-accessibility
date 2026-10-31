@@ -188,8 +188,24 @@ def service_features(dests: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return out.to_crs(4326)
 
 
+def service_locations(services: gpd.GeoDataFrame) -> list[dict[str, object]]:
+    """Service points grouped by location (EPSG:4326, 6 decimals): one entry per spot with every
+    distinct (service, name) there, so the map can draw a split dot where services share a spot."""
+    pts = services.assign(
+        lon=services.geometry.x.round(6), lat=services.geometry.y.round(6)
+    ).drop_duplicates(["lon", "lat", "service", "name"])
+    out = []
+    for (lon, lat), g in pts.groupby(["lon", "lat"], sort=True):
+        items = [{"service": r.service, "name": r.name} for r in g.itertuples()]
+        out.append({"lon": float(lon), "lat": float(lat), "items": items})
+    return out
+
+
 def summary(
-    feats: gpd.GeoDataFrame, cfg: CityConfig, equity_summary: dict | None
+    feats: gpd.GeoDataFrame,
+    cfg: CityConfig,
+    equity_summary: dict | None,
+    services: gpd.GeoDataFrame | None = None,
 ) -> dict[str, object]:
     sc = cfg.scoring
     rows = feats.drop(columns="geometry")
@@ -220,6 +236,7 @@ def summary(
             {k: (round(v, 1) if isinstance(v, float) else v) for k, v in h.items()}
             for h in headline
         ],
+        "service_points": [] if services is None else service_locations(services),
         "block_groups": [
             r | {"bbox": [round(v, 5) for v in b]}
             for r, b in zip(
@@ -314,7 +331,7 @@ def run(cfg: CityConfig) -> dict[str, Path]:
     eq_path = cfg.processed_dir / "equity_summary.json"
     eq_sum = json.loads(eq_path.read_text()) if eq_path.exists() else None
     summ = DOCS_DATA / f"{cfg.slug}_summary.json"
-    summ.write_text(json.dumps(summary(feats, cfg, eq_sum), indent=1) + "\n")
+    summ.write_text(json.dumps(summary(feats, cfg, eq_sum, layers["services"]), indent=1) + "\n")
     for p in (tiles, summ):
         print(f"[export] {p.relative_to(REPO_ROOT)}: {p.stat().st_size / 1024:.0f} KB", flush=True)
     return {"tiles": tiles, "summary": summ}

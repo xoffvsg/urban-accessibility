@@ -157,9 +157,44 @@ function buildPanel() {
     `. Method and code: <a href="https://github.com/xoffvsg/urban-accessibility">github.com/xoffvsg/urban-accessibility</a>.`;
 }
 
+/* Service points: one feature per location. Where several visible services share a spot (Walmart:
+   grocery + pharmacy) the dot is split into equal slices; with one visible service it is a full dot. */
+const PIE_PX = 24;  // icon size in CSS px at icon-size 1 (drawn at 2x for sharp edges)
+
+function pieImage(services) {
+  const r = 2 * PIE_PX, c = document.createElement("canvas");
+  c.width = c.height = r;
+  const g = c.getContext("2d"), mid = r / 2, rad = mid - 2;
+  services.forEach((s, i) => {
+    const a0 = -Math.PI / 2 + (2 * Math.PI * i) / services.length;
+    const a1 = -Math.PI / 2 + (2 * Math.PI * (i + 1)) / services.length;
+    g.beginPath(); g.moveTo(mid, mid); g.arc(mid, mid, rad, a0, a1); g.closePath();
+    g.fillStyle = S.web.service_colors[s] || "#888"; g.fill();
+  });
+  g.beginPath(); g.arc(mid, mid, rad, 0, 2 * Math.PI);
+  g.lineWidth = 2.5; g.strokeStyle = "#000"; g.stroke();
+  return g.getImageData(0, 0, r, r);
+}
+
+function visibleServices() {
+  return [...document.querySelectorAll("#layers [data-svc]:checked")].map((el) => el.dataset.svc);
+}
+
+function servicePointsData() {
+  const on = visibleServices(), order = Object.keys(S.web.service_colors);
+  return {
+    type: "FeatureCollection",
+    features: (S.service_points || []).map((p) => {
+      const items = p.items.filter((it) => on.includes(it.service));
+      const kinds = order.filter((k) => items.some((it) => it.service === k));
+      return { type: "Feature", geometry: { type: "Point", coordinates: [p.lon, p.lat] },
+               properties: { icon: kinds.length ? `pie:${kinds.join("+")}` : "", items: JSON.stringify(items) } };
+    }),
+  };
+}
+
 function filterServices() {
-  const on = [...document.querySelectorAll("#layers [data-svc]:checked")].map((el) => el.dataset.svc);
-  map.setFilter("services", ["in", ["get", "service"], ["literal", on]]);
+  map.getSource("svc")?.setData(servicePointsData());
 }
 
 /* names come from data (OSM/Overture/config): escape before putting them into HTML/SVG */
@@ -265,12 +300,16 @@ function addLayers() {
                  layout: { visibility: "none" },
                  paint: { "line-color": ["match", ["get", "lisa_cluster"], "HH", LISA.HH, LISA.LL], "line-width": 3,
                           "line-dasharray": [2, 1] } });
-  const sc = S.web.service_colors;
-  map.addLayer({ id: "services", type: "circle", source: "ua", "source-layer": "services",
-                 paint: { "circle-color": ["match", ["get", "service"], ...Object.entries(sc).flat(), "#888"],
-                          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 2.5, 15, 6],
-                          "circle-stroke-color": "#000", "circle-stroke-width": 0.7 } });
-  filterServices();
+  map.on("styleimagemissing", (e) => {
+    if (!e.id.startsWith("pie:") || map.hasImage(e.id)) return;
+    map.addImage(e.id, pieImage(e.id.slice(4).split("+")), { pixelRatio: 2 });
+  });
+  map.addSource("svc", { type: "geojson", data: servicePointsData() });
+  // icon diameter: 5 px at zoom 10, 12 px at zoom 15, 18 px at zoom 17 (split dots stay readable)
+  map.addLayer({ id: "services", type: "symbol", source: "svc", filter: ["!=", ["get", "icon"], ""],
+                 layout: { "icon-image": ["get", "icon"], "icon-allow-overlap": true, "icon-ignore-placement": true,
+                           "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 5 / PIE_PX, 15, 12 / PIE_PX,
+                                         17, 18 / PIE_PX] } });
 
   map.on("mousemove", "bg-fill", (e) => {
     map.getCanvas().style.cursor = "pointer";
@@ -279,14 +318,17 @@ function addLayers() {
   });
   map.on("mouseleave", "bg-fill", () => { map.getCanvas().style.cursor = ""; highlight(null); });
   map.on("click", "bg-fill", (e) => {
+    if (map.queryRenderedFeatures(e.point, { layers: ["services"] }).length) return;  // the dot's popup wins
     const p = e.features[0].properties;
     popup = new maplibregl.Popup({ maxWidth: "340px" }).setLngLat(e.lngLat).setHTML(popupHtml(p)).addTo(map);
     popup._ua = p;
   });
   map.on("click", "services", (e) => {
-    const p = e.features[0].properties;
-    new maplibregl.Popup({ maxWidth: "260px" }).setLngLat(e.lngLat)
-      .setHTML(`<div class="popup"><strong>${p.name || "(unnamed)"}</strong><br><span class="muted">${LABELS[p.service] || p.service}</span></div>`)
+    const items = JSON.parse(e.features[0].properties.items);
+    new maplibregl.Popup({ maxWidth: "260px" }).setLngLat(e.features[0].geometry.coordinates)
+      .setHTML(`<div class="popup">${items.map((it) =>
+        `<div><span class="dot" style="background:${S.web.service_colors[it.service]}"></span>` +
+        `<strong>${esc(it.name || "(unnamed)")}</strong> <span class="muted">${LABELS[it.service] || it.service}</span></div>`).join("")}</div>`)
       .addTo(map);
   });
   map.on("mouseenter", "services", () => { map.getCanvas().style.cursor = "pointer"; });

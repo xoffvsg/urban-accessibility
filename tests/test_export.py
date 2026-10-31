@@ -9,6 +9,7 @@ from urban_access.export import (
     area_names,
     block_group_features,
     service_features,
+    service_locations,
     short_street,
     summary,
     tract_bg,
@@ -194,3 +195,23 @@ def test_area_names_override_and_fallback():
     n = area_names(bg, parks.iloc[0:0], roads.iloc[0:0], {"A": "Downtown"}).set_index("geoid")
     assert n.at["A", "name"] == "Downtown" and n.at["A", "source"] == "override"
     assert n.at["B", "name"] == "Neighborhood 2-1"
+
+
+def test_service_locations_group_by_spot():
+    pts = gpd.GeoDataFrame(
+        {
+            "service": ["grocery", "healthcare", "transit", "transit", "parks"],
+            "name": ["Walmart", "Walmart Pharmacy", "Stop A", "Stop A", "Mills Park"],
+            "secondary": [False] * 5,
+        },
+        geometry=[Point(-119.7575301, 39.1872649), Point(-119.75753, 39.187265),
+                  Point(-119.7, 39.1), Point(-119.7, 39.1), Point(-119.8, 39.2)],
+        crs=4326,
+    )  # fmt: skip
+    locs = service_locations(pts)
+    assert len(locs) == 3  # Walmart pair merged (same spot at 6 decimals); duplicate stop dropped
+    walmart = next(x for x in locs if len(x["items"]) == 2)
+    assert {i["service"] for i in walmart["items"]} == {"grocery", "healthcare"}
+    assert next(x for x in locs if x["lon"] == -119.7)["items"] == [
+        {"service": "transit", "name": "Stop A"}
+    ]

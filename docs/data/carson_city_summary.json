@@ -152,6 +152,2732 @@
    "residents": 4594.4
   }
  ],
+ "service_points": [
+  {
+   "lon": -119.847703,
+   "lat": 39.003675,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Genoa Town Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.846285,
+   "lat": 39.002667,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Genoa Canyon"
+    }
+   ]
+  },
+  {
+   "lon": -119.845359,
+   "lat": 39.004723,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Mormon Station State Historic Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.798071,
+   "lat": 39.093482,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Jacks Valley Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.793701,
+   "lat": 39.189177,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Combs Canyon"
+    }
+   ]
+  },
+  {
+   "lon": -119.792411,
+   "lat": 39.165555,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Long Ranch Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.79043,
+   "lat": 39.18532,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Western Nevada College"
+    }
+   ]
+  },
+  {
+   "lon": -119.78823,
+   "lat": 39.18645,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & College Westbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78817,
+   "lat": 39.18631,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & College Eastbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78801,
+   "lat": 39.20368,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carson Tahoe Cancer Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.78692,
+   "lat": 39.20332,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Medical Parkway/Merrimer Cottages"
+    }
+   ]
+  },
+  {
+   "lon": -119.78616,
+   "lat": 39.20039,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carson Medical Group-Pediatrics"
+    }
+   ]
+  },
+  {
+   "lon": -119.78591,
+   "lat": 39.165595,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Kings Canyon Creek"
+    }
+   ]
+  },
+  {
+   "lon": -119.785559,
+   "lat": 39.200924,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Sierra Nevada Surgical Associates"
+    },
+    {
+     "service": "healthcare",
+     "name": "Children's Heart Center Nevada"
+    }
+   ]
+  },
+  {
+   "lon": -119.785011,
+   "lat": 39.085507,
+   "items": [
+    {
+     "service": "parks",
+     "name": "James Lee Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.784761,
+   "lat": 39.20204,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Carson Tahoe Regional Medical Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.78458,
+   "lat": 39.19958,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Sierra Surgical Hospital"
+    }
+   ]
+  },
+  {
+   "lon": -119.78456,
+   "lat": 39.18645,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Ormsby Westbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78411,
+   "lat": 39.18611,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & College Parkway"
+    }
+   ]
+  },
+  {
+   "lon": -119.78402,
+   "lat": 39.18419,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & Evergreen Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78393,
+   "lat": 39.18461,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & Evergreen Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78385,
+   "lat": 39.18226,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & Desert Peach Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78371,
+   "lat": 39.18632,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Ormsby Eastbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.783367,
+   "lat": 39.201288,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Medical Parkway/CTRMC - Main Entrance"
+    }
+   ]
+  },
+  {
+   "lon": -119.78239,
+   "lat": 39.18071,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & Oak Ridge Westbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78186,
+   "lat": 39.1804,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Ormsby & Oak Ridge Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.78176,
+   "lat": 39.19865,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Medical Parkway & Vista"
+    }
+   ]
+  },
+  {
+   "lon": -119.780937,
+   "lat": 39.197702,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "GI Consultants"
+    }
+   ]
+  },
+  {
+   "lon": -119.78037,
+   "lat": 39.18646,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Silver Stream"
+    }
+   ]
+  },
+  {
+   "lon": -119.778598,
+   "lat": 39.114229,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Fuji Park Dog Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.778582,
+   "lat": 39.09674,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Valley Vista Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.77842,
+   "lat": 39.19757,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Medical & Carson"
+    }
+   ]
+  },
+  {
+   "lon": -119.778402,
+   "lat": 39.164898,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Carson Middle School"
+    }
+   ]
+  },
+  {
+   "lon": -119.778277,
+   "lat": 39.111867,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Walmart"
+    },
+    {
+     "service": "healthcare",
+     "name": "Walmart Pharmacy"
+    }
+   ]
+  },
+  {
+   "lon": -119.778219,
+   "lat": 39.099908,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Target"
+    }
+   ]
+  },
+  {
+   "lon": -119.777431,
+   "lat": 39.17462,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Monte Vista Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.77731,
+   "lat": 39.11556,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Old Clear Creek/Fuji Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.777169,
+   "lat": 39.186953,
+   "items": [
+    {
+     "service": "parks",
+     "name": "John Mankins Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.777105,
+   "lat": 39.186299,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Silver Oak Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.777032,
+   "lat": 39.177641,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Carriage Square playground"
+    }
+   ]
+  },
+  {
+   "lon": -119.776784,
+   "lat": 39.177968,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Carriage Square Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.77647,
+   "lat": 39.17925,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Winnie & El Rancho"
+    }
+   ]
+  },
+  {
+   "lon": -119.776429,
+   "lat": 39.117011,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Costco"
+    },
+    {
+     "service": "healthcare",
+     "name": "Costco"
+    }
+   ]
+  },
+  {
+   "lon": -119.7764,
+   "lat": 39.18948,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & GS Richards"
+    }
+   ]
+  },
+  {
+   "lon": -119.776112,
+   "lat": 39.161239,
+   "items": [
+    {
+     "service": "schools",
+     "name": "St. Teresa's School"
+    }
+   ]
+  },
+  {
+   "lon": -119.776092,
+   "lat": 39.091401,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Washoe One Stop"
+    }
+   ]
+  },
+  {
+   "lon": -119.775724,
+   "lat": 39.11294,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Trader Joe's"
+    }
+   ]
+  },
+  {
+   "lon": -119.77537,
+   "lat": 39.19474,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carson & Silver Oak/Holiday Inn Express"
+    }
+   ]
+  },
+  {
+   "lon": -119.775204,
+   "lat": 39.167982,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Sunset Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.775065,
+   "lat": 39.114908,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Fuji Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.77499,
+   "lat": 39.19019,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Carson/Save Mart"
+    }
+   ]
+  },
+  {
+   "lon": -119.77499,
+   "lat": 39.190723,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Save Mart"
+    }
+   ]
+  },
+  {
+   "lon": -119.773511,
+   "lat": 39.171129,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Carson Medical Group Pediatric"
+    }
+   ]
+  },
+  {
+   "lon": -119.77341,
+   "lat": 39.17926,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Winnie & Mountain"
+    }
+   ]
+  },
+  {
+   "lon": -119.77298,
+   "lat": 39.17882,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Mountain & Winnie"
+    }
+   ]
+  },
+  {
+   "lon": -119.77296,
+   "lat": 39.17526,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Mountain & Bath Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.77295,
+   "lat": 39.17261,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Mountain & Fleischmann"
+    }
+   ]
+  },
+  {
+   "lon": -119.7729,
+   "lat": 39.1304,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Curry @ Fandango Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.77282,
+   "lat": 39.17588,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Mountain & Bath Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.77278,
+   "lat": 39.17804,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Mountain & Ivy"
+    }
+   ]
+  },
+  {
+   "lon": -119.772769,
+   "lat": 39.170098,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Desert Valley Family Practice"
+    }
+   ]
+  },
+  {
+   "lon": -119.77274,
+   "lat": 39.13046,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Curry @ Fandango Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.772695,
+   "lat": 39.169604,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "David A. Johnson, MD"
+    }
+   ]
+  },
+  {
+   "lon": -119.772578,
+   "lat": 39.169291,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Sierra Family Health Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.77236,
+   "lat": 39.19093,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "7-Eleven"
+    }
+   ]
+  },
+  {
+   "lon": -119.772242,
+   "lat": 39.163565,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Bordewich Bray Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.772029,
+   "lat": 39.089414,
+   "items": [
+    {
+     "service": "parks",
+     "name": "South Sunridge Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.771879,
+   "lat": 39.177784,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Bethlehem Lutheran School"
+    }
+   ]
+  },
+  {
+   "lon": -119.77185,
+   "lat": 39.12829,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clearview & U.S. 395/Save Mart - South (Eastbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.77169,
+   "lat": 39.12842,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clearview & U.S. 395/Save Mart - South (Westbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.77152,
+   "lat": 39.17168,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Fleischmann & Lane/Carson Tahoe Spec Medical Ctr"
+    }
+   ]
+  },
+  {
+   "lon": -119.7714,
+   "lat": 39.19055,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Carson/Burger King"
+    }
+   ]
+  },
+  {
+   "lon": -119.77129,
+   "lat": 39.11756,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clear Creek & U.S. 395"
+    }
+   ]
+  },
+  {
+   "lon": -119.771171,
+   "lat": 39.175933,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Fritsch Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.771065,
+   "lat": 39.185272,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Aspen Family Medical"
+    }
+   ]
+  },
+  {
+   "lon": -119.77055,
+   "lat": 39.19077,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Imperial"
+    }
+   ]
+  },
+  {
+   "lon": -119.770404,
+   "lat": 39.171001,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Treadway Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.7702,
+   "lat": 39.17178,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Fleischmann & Division"
+    }
+   ]
+  },
+  {
+   "lon": -119.7702,
+   "lat": 39.18477,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Renown Health Urgent Care - North Carson"
+    }
+   ]
+  },
+  {
+   "lon": -119.76992,
+   "lat": 39.171375,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Merritt W. Dunlap, Md, Pc"
+    }
+   ]
+  },
+  {
+   "lon": -119.7696,
+   "lat": 39.1624,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & 3rd Outbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76958,
+   "lat": 39.15969,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & 7th"
+    }
+   ]
+  },
+  {
+   "lon": -119.76956,
+   "lat": 39.16359,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & King"
+    }
+   ]
+  },
+  {
+   "lon": -119.76954,
+   "lat": 39.16821,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & Washington"
+    }
+   ]
+  },
+  {
+   "lon": -119.76948,
+   "lat": 39.1713,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & John"
+    }
+   ]
+  },
+  {
+   "lon": -119.7694,
+   "lat": 39.1694,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Division & Ann"
+    }
+   ]
+  },
+  {
+   "lon": -119.769383,
+   "lat": 39.092494,
+   "items": [
+    {
+     "service": "parks",
+     "name": "North Sunridge Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.768906,
+   "lat": 39.168995,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Andrea K. Weed, Do, Pc"
+    }
+   ]
+  },
+  {
+   "lon": -119.7685,
+   "lat": 39.15796,
+   "items": [
+    {
+     "service": "transit",
+     "name": "10th & Nevada"
+    }
+   ]
+  },
+  {
+   "lon": -119.76827,
+   "lat": 39.16854,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Washington & Curry"
+    }
+   ]
+  },
+  {
+   "lon": -119.76824,
+   "lat": 39.149508,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Kit Carson Trail"
+    }
+   ]
+  },
+  {
+   "lon": -119.76812,
+   "lat": 39.164806,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Vip Medical Access"
+    }
+   ]
+  },
+  {
+   "lon": -119.76806,
+   "lat": 39.12843,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clearview & Oak/Southgate Shopping Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.767853,
+   "lat": 39.132969,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Raley's"
+    },
+    {
+     "service": "healthcare",
+     "name": "Raley's"
+    }
+   ]
+  },
+  {
+   "lon": -119.7678,
+   "lat": 39.1589,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Curry & 8th Outbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76777,
+   "lat": 39.13374,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Koontz & U.S. 395/Eagle Station"
+    }
+   ]
+  },
+  {
+   "lon": -119.76749,
+   "lat": 39.17863,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "CVS Pharmacy"
+    }
+   ]
+  },
+  {
+   "lon": -119.76728,
+   "lat": 39.13387,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Koontz & U.S. 395/Seven Star Mobile Home Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.76728,
+   "lat": 39.19071,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Granite"
+    }
+   ]
+  },
+  {
+   "lon": -119.766951,
+   "lat": 39.170703,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "ExtraMile by Jacksons"
+    }
+   ]
+  },
+  {
+   "lon": -119.7669,
+   "lat": 39.18009,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carson & Hot Springs/C-A-L Ranch"
+    }
+   ]
+  },
+  {
+   "lon": -119.76686,
+   "lat": 39.16472,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carson & Musser @ City Hall"
+    }
+   ]
+  },
+  {
+   "lon": -119.766851,
+   "lat": 39.12582,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Ross Gold Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.76636,
+   "lat": 39.1906,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Northgate"
+    }
+   ]
+  },
+  {
+   "lon": -119.76628,
+   "lat": 39.18202,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Northgate"
+    }
+   ]
+  },
+  {
+   "lon": -119.766267,
+   "lat": 39.150271,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "CVS Pharmacy"
+    }
+   ]
+  },
+  {
+   "lon": -119.76625,
+   "lat": 39.16134,
+   "items": [
+    {
+     "service": "transit",
+     "name": "5th & Carson/State of Nevada General Assembly"
+    }
+   ]
+  },
+  {
+   "lon": -119.76598,
+   "lat": 39.16786,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Plaza & Washington - Downtown Transfer Plaza"
+    }
+   ]
+  },
+  {
+   "lon": -119.76585,
+   "lat": 39.16118,
+   "items": [
+    {
+     "service": "transit",
+     "name": "5th & Plaza"
+    }
+   ]
+  },
+  {
+   "lon": -119.76584,
+   "lat": 39.14796,
+   "items": [
+    {
+     "service": "transit",
+     "name": "California & Industrial Park Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.7658,
+   "lat": 39.17912,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Winnie & Carson Frontier Plaza"
+    }
+   ]
+  },
+  {
+   "lon": -119.7657,
+   "lat": 39.14821,
+   "items": [
+    {
+     "service": "transit",
+     "name": "California & Industrial Park Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76547,
+   "lat": 39.18272,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Northgate/Safari Mobile Home Vil."
+    }
+   ]
+  },
+  {
+   "lon": -119.76458,
+   "lat": 39.1591,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Stewart & 8th"
+    }
+   ]
+  },
+  {
+   "lon": -119.76439,
+   "lat": 39.16015,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Stewart & 5th"
+    }
+   ]
+  },
+  {
+   "lon": -119.76437,
+   "lat": 39.1578,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Stewart & Little"
+    }
+   ]
+  },
+  {
+   "lon": -119.76384,
+   "lat": 39.18451,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs/Crestview Mobile Home Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.7638,
+   "lat": 39.17926,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Winnie & Lone Mountain"
+    }
+   ]
+  },
+  {
+   "lon": -119.763762,
+   "lat": 39.194264,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Ronald D Wilson Memorial Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.76364,
+   "lat": 39.13656,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Vintage"
+    }
+   ]
+  },
+  {
+   "lon": -119.76361,
+   "lat": 39.14008,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Stafford Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76359,
+   "lat": 39.14221,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Sonoma Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76349,
+   "lat": 39.1574,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Little & Stewart/NDOT"
+    }
+   ]
+  },
+  {
+   "lon": -119.76347,
+   "lat": 39.12525,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Appion"
+    }
+   ]
+  },
+  {
+   "lon": -119.76345,
+   "lat": 39.13787,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Pioche"
+    }
+   ]
+  },
+  {
+   "lon": -119.76345,
+   "lat": 39.13994,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Stafford Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76345,
+   "lat": 39.14213,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Sonoma Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76344,
+   "lat": 39.13434,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Koontz"
+    }
+   ]
+  },
+  {
+   "lon": -119.7634,
+   "lat": 39.12808,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Clearview"
+    }
+   ]
+  },
+  {
+   "lon": -119.7634,
+   "lat": 39.165659,
+   "items": [
+    {
+     "service": "schools",
+     "name": "I-School"
+    }
+   ]
+  },
+  {
+   "lon": -119.76338,
+   "lat": 39.14655,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Colorado & Silver Sage"
+    }
+   ]
+  },
+  {
+   "lon": -119.763216,
+   "lat": 39.007543,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Grace Christian Academy"
+    }
+   ]
+  },
+  {
+   "lon": -119.76321,
+   "lat": 39.14548,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Silver Sage & Raven"
+    }
+   ]
+  },
+  {
+   "lon": -119.76285,
+   "lat": 39.15137,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Fairview"
+    }
+   ]
+  },
+  {
+   "lon": -119.762737,
+   "lat": 39.169194,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Smith's"
+    },
+    {
+     "service": "healthcare",
+     "name": "Smith's"
+    }
+   ]
+  },
+  {
+   "lon": -119.76265,
+   "lat": 39.15149,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Evalyn"
+    }
+   ]
+  },
+  {
+   "lon": -119.76251,
+   "lat": 39.1671,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Robinson & Andersen"
+    }
+   ]
+  },
+  {
+   "lon": -119.76248,
+   "lat": 39.15731,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Little & Roop"
+    }
+   ]
+  },
+  {
+   "lon": -119.76231,
+   "lat": 39.17623,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Stewart Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76211,
+   "lat": 39.16717,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Robinson & Walsh"
+    }
+   ]
+  },
+  {
+   "lon": -119.76199,
+   "lat": 39.1761,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Stewart Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76196,
+   "lat": 39.19072,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Diamond"
+    }
+   ]
+  },
+  {
+   "lon": -119.76173,
+   "lat": 39.18646,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Pine Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76163,
+   "lat": 39.16458,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Musser & Roop @ Courthouse"
+    }
+   ]
+  },
+  {
+   "lon": -119.76142,
+   "lat": 39.18693,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Pine Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.76126,
+   "lat": 39.16925,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Washington/Public Library"
+    }
+   ]
+  },
+  {
+   "lon": -119.76115,
+   "lat": 39.15558,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Randell/Post Office"
+    }
+   ]
+  },
+  {
+   "lon": -119.76115,
+   "lat": 39.17381,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Long"
+    }
+   ]
+  },
+  {
+   "lon": -119.761,
+   "lat": 39.16937,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Washington/Community Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.76094,
+   "lat": 39.17456,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & Beverly"
+    }
+   ]
+  },
+  {
+   "lon": -119.760804,
+   "lat": 39.186932,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Quik Stop"
+    }
+   ]
+  },
+  {
+   "lon": -119.76079,
+   "lat": 39.11763,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clear Creek & Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.76074,
+   "lat": 39.18921,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & College Parkway (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.7607,
+   "lat": 39.18899,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Roop & College Parkway (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75987,
+   "lat": 39.17512,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Beverly & Roop/Senior Center (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75965,
+   "lat": 39.17513,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Beverly & Roop/Senior Center (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.759615,
+   "lat": 39.119224,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Carson Tahoe Area"
+    }
+   ]
+  },
+  {
+   "lon": -119.75947,
+   "lat": 39.18763,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Retail/Walmart (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75924,
+   "lat": 39.18771,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Hot Springs & Retail/Walmart (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75897,
+   "lat": 39.17412,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long/Health & Human Services (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.758877,
+   "lat": 39.170305,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Mills Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.75885,
+   "lat": 39.17412,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long/Health & Human Services (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.758274,
+   "lat": 39.139551,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Sonoma Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.757826,
+   "lat": 39.153045,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Governors Field"
+    }
+   ]
+  },
+  {
+   "lon": -119.75776,
+   "lat": 39.11791,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Clear Creek & Snyder/State of Nevada-SF"
+    }
+   ]
+  },
+  {
+   "lon": -119.75753,
+   "lat": 39.187265,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Walmart"
+    },
+    {
+     "service": "healthcare",
+     "name": "Walmart Pharmacy"
+    }
+   ]
+  },
+  {
+   "lon": -119.75738,
+   "lat": 39.17517,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Beverly & Marian/Autumn Village I (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75724,
+   "lat": 39.17414,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Marian/Autumn Village II (Outbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.7572,
+   "lat": 39.17516,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Beverly & Marian/Autumn Village I (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.75712,
+   "lat": 39.17413,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Marian/Autumn Village II (Inbound)"
+    }
+   ]
+  },
+  {
+   "lon": -119.755727,
+   "lat": 39.170166,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Carson City Skate Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.754936,
+   "lat": 39.133577,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Prison Hill Recreation Area"
+    }
+   ]
+  },
+  {
+   "lon": -119.754751,
+   "lat": 39.187078,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Sprouts Farmers Market"
+    }
+   ]
+  },
+  {
+   "lon": -119.75474,
+   "lat": 39.174,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Molly"
+    }
+   ]
+  },
+  {
+   "lon": -119.754492,
+   "lat": 39.184482,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Steinheimer Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.753514,
+   "lat": 39.141863,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Al Seeliger Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.752044,
+   "lat": 39.189647,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Maverik Adventures First Stop"
+    }
+   ]
+  },
+  {
+   "lon": -119.75174,
+   "lat": 39.17404,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Saliman Westbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.751552,
+   "lat": 39.171324,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Walgreens"
+    }
+   ]
+  },
+  {
+   "lon": -119.751527,
+   "lat": 39.149684,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Fairview Food Mart"
+    }
+   ]
+  },
+  {
+   "lon": -119.75107,
+   "lat": 39.1904,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Research & College Parkway Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.750921,
+   "lat": 39.155245,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Fremont Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.750726,
+   "lat": 39.17651,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Sunland Vista Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.75067,
+   "lat": 39.17396,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Saliman Eastbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.750621,
+   "lat": 39.161047,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "ExtraMile"
+    }
+   ]
+  },
+  {
+   "lon": -119.750491,
+   "lat": 39.18022,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Mark Twain Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.75037,
+   "lat": 39.1889,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Research & College/Neveda Health Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.75017,
+   "lat": 39.19296,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Old Hot Springs Rd. & Wedco Eastbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.750081,
+   "lat": 39.172739,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Jacksons Food Stores"
+    }
+   ]
+  },
+  {
+   "lon": -119.74986,
+   "lat": 39.189124,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Sierra Family Health Center"
+    }
+   ]
+  },
+  {
+   "lon": -119.749788,
+   "lat": 39.189161,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Nevada Health Centers"
+    }
+   ]
+  },
+  {
+   "lon": -119.74957,
+   "lat": 39.11476,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Legacy Christian Academy Nevada"
+    }
+   ]
+  },
+  {
+   "lon": -119.749353,
+   "lat": 39.173272,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Rand Avenue Convenience Store"
+    }
+   ]
+  },
+  {
+   "lon": -119.74895,
+   "lat": 39.1741,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Rand"
+    }
+   ]
+  },
+  {
+   "lon": -119.74831,
+   "lat": 39.18949,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Servanna Health"
+    }
+   ]
+  },
+  {
+   "lon": -119.748117,
+   "lat": 39.189239,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Concentra Urgent Care"
+    }
+   ]
+  },
+  {
+   "lon": -119.747835,
+   "lat": 39.181661,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Blackwell's Pond Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.74771,
+   "lat": 39.18863,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Goni & Research"
+    }
+   ]
+  },
+  {
+   "lon": -119.74753,
+   "lat": 39.19247,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Old Hot Springs Rd. & Goni"
+    }
+   ]
+  },
+  {
+   "lon": -119.7467,
+   "lat": 39.18997,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Goni"
+    }
+   ]
+  },
+  {
+   "lon": -119.746503,
+   "lat": 39.192931,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Carson Medical Group"
+    }
+   ]
+  },
+  {
+   "lon": -119.74553,
+   "lat": 39.17498,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long/Carson Plaza"
+    }
+   ]
+  },
+  {
+   "lon": -119.744747,
+   "lat": 39.174374,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "99 Cents Only Stores"
+    }
+   ]
+  },
+  {
+   "lon": -119.744739,
+   "lat": 39.174545,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Grocery Outlet"
+    }
+   ]
+  },
+  {
+   "lon": -119.74406,
+   "lat": 39.17523,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Long & Russell"
+    }
+   ]
+  },
+  {
+   "lon": -119.744003,
+   "lat": 39.206007,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Carson Montessori School"
+    }
+   ]
+  },
+  {
+   "lon": -119.74357,
+   "lat": 39.1905,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Challenger"
+    }
+   ]
+  },
+  {
+   "lon": -119.743463,
+   "lat": 39.174906,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Hacienda Market and Grill"
+    }
+   ]
+  },
+  {
+   "lon": -119.74304,
+   "lat": 39.17773,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Russell & Northridge (MAC) southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.743033,
+   "lat": 39.177941,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Russell & Northridge (MAC) northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.74266,
+   "lat": 39.17669,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Russell/Foothill Garden Apartments"
+    }
+   ]
+  },
+  {
+   "lon": -119.74248,
+   "lat": 39.17645,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Russell & Long"
+    }
+   ]
+  },
+  {
+   "lon": -119.7422,
+   "lat": 39.1902,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Lompa"
+    }
+   ]
+  },
+  {
+   "lon": -119.74193,
+   "lat": 39.179104,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Carmine & Lompa"
+    }
+   ]
+  },
+  {
+   "lon": -119.74179,
+   "lat": 39.17852,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Lompa & Carmine"
+    }
+   ]
+  },
+  {
+   "lon": -119.73979,
+   "lat": 39.17681,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Lompa & Dori"
+    }
+   ]
+  },
+  {
+   "lon": -119.73837,
+   "lat": 39.19026,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway/Carson City Airport"
+    }
+   ]
+  },
+  {
+   "lon": -119.738196,
+   "lat": 39.174825,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Golden Gate Petroleum"
+    }
+   ]
+  },
+  {
+   "lon": -119.738047,
+   "lat": 39.13569,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Prison Hill Trailhead"
+    }
+   ]
+  },
+  {
+   "lon": -119.73792,
+   "lat": 39.17421,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Lompa & U.S. 50"
+    }
+   ]
+  },
+  {
+   "lon": -119.73718,
+   "lat": 39.19004,
+   "items": [
+    {
+     "service": "transit",
+     "name": "College Parkway & Airport"
+    }
+   ]
+  },
+  {
+   "lon": -119.736842,
+   "lat": 39.175163,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "Sierra Wellness Connection"
+    }
+   ]
+  },
+  {
+   "lon": -119.7367,
+   "lat": 39.17305,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Menlo & Lompa"
+    }
+   ]
+  },
+  {
+   "lon": -119.73508,
+   "lat": 39.17318,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Menlo & Airport"
+    }
+   ]
+  },
+  {
+   "lon": -119.73496,
+   "lat": 39.189,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & College"
+    }
+   ]
+  },
+  {
+   "lon": -119.73465,
+   "lat": 39.17279,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Menlo"
+    }
+   ]
+  },
+  {
+   "lon": -119.73449,
+   "lat": 39.17173,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Minonee"
+    }
+   ]
+  },
+  {
+   "lon": -119.73428,
+   "lat": 39.169,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Desatoya"
+    }
+   ]
+  },
+  {
+   "lon": -119.73339,
+   "lat": 39.18697,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Nye southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.73337,
+   "lat": 39.18307,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Sherman Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.73329,
+   "lat": 39.17817,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & U.S. 50 @ CVS"
+    }
+   ]
+  },
+  {
+   "lon": -119.73321,
+   "lat": 39.18216,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Sherman Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.7332,
+   "lat": 39.17845,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Carmine"
+    }
+   ]
+  },
+  {
+   "lon": -119.7332,
+   "lat": 39.18542,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Nye Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.73319,
+   "lat": 39.18722,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & Harrison"
+    }
+   ]
+  },
+  {
+   "lon": -119.73313,
+   "lat": 39.17586,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Airport & U.S. 50 Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.73309,
+   "lat": 39.16853,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Desatoya & Airport"
+    }
+   ]
+  },
+  {
+   "lon": -119.732739,
+   "lat": 39.18652,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "One Stop Food Mart"
+    }
+   ]
+  },
+  {
+   "lon": -119.73266,
+   "lat": 39.17502,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Woodside & Airport/FoodMaxx"
+    }
+   ]
+  },
+  {
+   "lon": -119.73223,
+   "lat": 39.17843,
+   "items": [
+    {
+     "service": "healthcare",
+     "name": "CVS Pharmacy"
+    }
+   ]
+  },
+  {
+   "lon": -119.73185,
+   "lat": 39.17511,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Woodside & Sharon/FoodMaxx"
+    }
+   ]
+  },
+  {
+   "lon": -119.731549,
+   "lat": 39.167766,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Butti & Airport (Sierra Flats Apartments)"
+    }
+   ]
+  },
+  {
+   "lon": -119.731403,
+   "lat": 39.176087,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Foodmaxx"
+    }
+   ]
+  },
+  {
+   "lon": -119.731377,
+   "lat": 39.178445,
+   "items": [
+    {
+     "service": "grocery",
+     "name": "Centro Market"
+    }
+   ]
+  },
+  {
+   "lon": -119.73,
+   "lat": 39.16856,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Desatoya & Cascade"
+    }
+   ]
+  },
+  {
+   "lon": -119.729155,
+   "lat": 39.171277,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Empire Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.72889,
+   "lat": 39.173594,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Park Terrace Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.72841,
+   "lat": 39.17323,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Monte Rosa & Selby/Park Terrace Park Southbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.72825,
+   "lat": 39.17318,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Monte Rosa & Selby/Park Terrace Park Northbound"
+    }
+   ]
+  },
+  {
+   "lon": -119.72815,
+   "lat": 39.17153,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Monte Rosa & Stanton/Empire Elem Sch"
+    }
+   ]
+  },
+  {
+   "lon": -119.72803,
+   "lat": 39.16884,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Monte Rosa & Desatoya"
+    }
+   ]
+  },
+  {
+   "lon": -119.727008,
+   "lat": 39.041432,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Johnson Lane Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.725708,
+   "lat": 39.040311,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Pi\u00f1on Hills Elementary School"
+    }
+   ]
+  },
+  {
+   "lon": -119.724884,
+   "lat": 39.167179,
+   "items": [
+    {
+     "service": "transit",
+     "name": "Butti & Fairview (JAC Administration Office)"
+    }
+   ]
+  },
+  {
+   "lon": -119.724548,
+   "lat": 39.168682,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Eagle Valley Market"
+    }
+   ]
+  },
+  {
+   "lon": -119.723071,
+   "lat": 39.181589,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Maverik"
+    }
+   ]
+  },
+  {
+   "lon": -119.723036,
+   "lat": 39.181531,
+   "items": [
+    {
+     "service": "convenience",
+     "name": "Maverik Adventure's First Stop"
+    }
+   ]
+  },
+  {
+   "lon": -119.722295,
+   "lat": 39.165994,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Moffat Open Space Property"
+    }
+   ]
+  },
+  {
+   "lon": -119.721555,
+   "lat": 39.146636,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Carson River Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.719905,
+   "lat": 39.158896,
+   "items": [
+    {
+     "service": "schools",
+     "name": "Eagle Valley Middle School"
+    }
+   ]
+  },
+  {
+   "lon": -119.71852,
+   "lat": 39.14279,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Silver Saddle Ranch"
+    }
+   ]
+  },
+  {
+   "lon": -119.717345,
+   "lat": 39.174292,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Empire Ranch Trail"
+    }
+   ]
+  },
+  {
+   "lon": -119.716186,
+   "lat": 39.178407,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Empire Ranch Estates Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.716106,
+   "lat": 39.171801,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Empire Ranch Trailhead"
+    }
+   ]
+  },
+  {
+   "lon": -119.711151,
+   "lat": 39.160784,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Korean War Veterans Memorial Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.708579,
+   "lat": 39.159657,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Riverview Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.706903,
+   "lat": 39.198854,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Centennial Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.706075,
+   "lat": 39.141863,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Carson City River Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.705988,
+   "lat": 39.141864,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Camp Carson Park"
+    }
+   ]
+  },
+  {
+   "lon": -119.699497,
+   "lat": 39.178525,
+   "items": [
+    {
+     "service": "parks",
+     "name": "Ambrose Carson River Natural Area"
+    }
+   ]
+  }
+ ],
  "block_groups": [
   {
    "geoid": "320050022005",
@@ -982,5 +3708,5 @@
    ]
   }
  ],
- "created_utc": "2026-10-31T22:17:22+00:00"
+ "created_utc": "2026-10-31T23:22:18+00:00"
 }

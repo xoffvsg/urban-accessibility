@@ -307,7 +307,10 @@ service. Every finding quoted in the README must come from a notebook cell. Meth
   properties (set paint expression / feature-state); map, legend and chart update together.
 - Sorted bar chart of block groups by score, linked to the map (hover/click highlights).
 - Toggleable service-point layer by type; optional LISA cluster outlines (default weights). Basemap:
-  OpenFreeMap positron. Libraries pinned on unpkg: `maplibre-gl@4.7.1`, `pmtiles@3.2.1`. `?city=<slug>`
+  OpenFreeMap positron. Service points are drawn from `service_points` in the summary JSON (grouped
+  by location, `export.service_locations`): where visible services share a spot the dot is split
+  into equal slices (canvas icons made on demand, `styleimagemissing`); one visible service = a full
+  dot. Libraries pinned on unpkg: `maplibre-gl@4.7.1`, `pmtiles@3.2.1`. `?city=<slug>`
   selects the data files. No build step: `docs/index.html`, `app.js`, `style.css`.
 - Attribution for Overture (ODbL/CDLA per theme), OSM-derived data, Census, basemap.
 - Must work locally with `cd docs && python -m RangeHTTPServer 8000` (http://localhost:8000) and on
