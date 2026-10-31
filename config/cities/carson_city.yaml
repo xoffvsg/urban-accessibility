@@ -108,4 +108,23 @@ xcheck:
   # Overture park are added to the parks layer (city decision 2026-10-31).
   city_parks_url: "https://services5.arcgis.com/C0ejqMIMxJZHALms/arcgis/rest/services/Parks_and_Trails/FeatureServer/2"
   city_parks_source: "Carson City GIS"
-extra_parks: true                 # add the city park polygons above to the parks layer
+extra_parks: true
+
+# Where people live: dwelling units per parcel, one entry per county (state + county FIPS). Counties
+# without an entry keep the footprint heuristic (scoring.yaml residential:). Only the fields listed
+# here are requested: the parcel layers also hold owner names and mailing addresses, never fetched.
+# No licence stated by either county; raw files stay in data/, only block-group results are published.
+homes:
+  - county: "32510"
+    source: "Carson City GIS Existing Land Use"
+    url: "https://services5.arcgis.com/C0ejqMIMxJZHALms/arcgis/rest/services/Existing_Land_Use_Final/FeatureServer/0"
+    units_field: Total_DWUn           # dwelling units (assessor)
+    category_field: LU_Categor
+  - county: "32005"
+    source: "Douglas County GIS zoning and parcels"
+    parcels_url: "https://gisservices.douglasnv.us/server/rest/services/Douglas/Parcels__Oracle/FeatureServer/0"
+    zoning_url: "https://gisservices.douglasnv.us/server/rest/services/Zoning/FeatureServer/3"
+    zone_field: ZoningCode
+    one_per_parcel: ["SFR-*", "RA-*", "A-*", "FR-*", "WASHOE TRIBE"]   # one home, largest building
+    floor_area: ["MFR"]               # units = floor area / m2_per_unit
+                 # add the city park polygons above to the parks layer

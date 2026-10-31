@@ -218,5 +218,14 @@ def load_all(cfg: CityConfig) -> dict[str, float]:
             print(f"[load] {table} …", flush=True)
             load_parquet(cfg.raw_dir / fname, table, cfg, nlt)
             timings[table] = time.time() - t0
+    parcels = cfg.raw_dir / "parcels.parquet"
+    if cfg.homes and parcels.exists():
+        t0 = time.time()
+        print("[load] parcels …", flush=True)
+        load_parquet(parcels, "parcels", cfg, "PROMOTE_TO_MULTI")
+        timings["parcels"] = time.time() - t0
+    else:  # no parcel source configured: homes come from the footprint heuristic everywhere
+        with engine().begin() as con:
+            con.exec_driver_sql(f'DROP TABLE IF EXISTS "{cfg.slug}".parcels')
     run_sql("10_prepare.sql", cfg)
     return timings

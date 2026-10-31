@@ -72,8 +72,25 @@ CROSS JOIN LATERAL (
 CREATE INDEX origin_dist_idx ON origin_dist (origin_id, service);
 ANALYZE origin_dist;
 
--- 3. Destinations within reach of each vertex (non-equicost: one row per destination) ---------
--- radius: first band for every service, people_radius_m for grocery (people_per_grocery)
+-- 3. Destinations within reach of each vertex (one row per counted destination) ---------------
+-- radius: first band for every service, people_radius_m for grocery (people_per_grocery).
+-- Counts need "is this destination (group_key) within r?", not which access point, so each group
+-- gets one virtual source node with one-way, zero-cost links to its access points: one search per
+-- group instead of one per point (parks: ~117 parks vs ~4,300 boundary points, same result). The
+-- links are one-way (reverse_cost -1, directed search; street edges get equal costs both ways) so a
+-- route can never enter another group's source node and cross that park for free.
+DROP TABLE IF EXISTS group_src;
+CREATE TABLE group_src AS
+SELECT service, group_key,
+       (SELECT max(node) FROM dests) + dense_rank() OVER (ORDER BY service, group_key) AS gnode
+FROM (SELECT DISTINCT service, group_key FROM dests) x;
+DROP TABLE IF EXISTS group_links;
+CREATE TABLE group_links AS
+SELECT (SELECT max(id) FROM dest_edges) + row_number() OVER (ORDER BY g.gnode, d.node) AS id,
+       d.service, g.gnode AS source, d.node AS target
+FROM dests d JOIN group_src g USING (service, group_key);
+CREATE INDEX group_links_service_idx ON group_links (service);
+
 DROP TABLE IF EXISTS vertex_reach;
 CREATE TABLE vertex_reach (service text, node bigint, group_key text, agg_cost float8);
 DO $$
@@ -83,15 +100,19 @@ BEGIN
         r := CASE WHEN s = 'grocery' THEN current_setting('ua.people_radius_m')::float8
                   ELSE current_setting('ua.near_m')::float8 END;
         INSERT INTO vertex_reach
-        SELECT s, dd.node, d.group_key, min(dd.agg_cost)
+        SELECT s, dd.node, g.group_key, dd.agg_cost
         FROM pgr_drivingDistance(
-            format($q$SELECT id, source, target, cost_m AS cost FROM %1$I.edges WHERE main
+            format($q$SELECT id, source, target, cost_m AS cost, cost_m AS reverse_cost
+                      FROM %1$I.edges WHERE main
                       UNION ALL
-                      SELECT id, source, target, cost FROM %1$I.dest_edges WHERE service = %2$L$q$,
+                      SELECT id, source, target, cost, cost FROM %1$I.dest_edges
+                      WHERE service = %2$L
+                      UNION ALL
+                      SELECT id, source, target, 0, -1 FROM %1$I.group_links
+                      WHERE service = %2$L$q$,
                    current_schema(), s),
-            (SELECT array_agg(node) FROM dests WHERE service = s), r, false, false) dd
-        JOIN dests d ON d.node = dd.start_vid
-        GROUP BY dd.node, d.group_key;
+            (SELECT array_agg(gnode) FROM group_src WHERE service = s), r, true, false) dd
+        JOIN group_src g ON g.gnode = dd.start_vid AND g.service = s;
     END LOOP;
 END $$;
 CREATE INDEX vertex_reach_idx ON vertex_reach (node);

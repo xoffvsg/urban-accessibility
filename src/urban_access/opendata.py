@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import csv
+import fnmatch
 import io
 from pathlib import Path
 
@@ -76,6 +77,101 @@ def city_parks(cfg: CityConfig, force: bool = False) -> Path | None:
         licence="not stated; used with attribution",
     )
     print(f"[city_parks] {len(g)} polygons")
+    return out
+
+
+# ---- homes (dwelling units per parcel) --------------------------------------------------------
+
+RULE_ASSESSOR, RULE_ONE, RULE_FLOOR, RULE_NONE = "assessor", "one_per_parcel", "floor_area", "none"
+
+
+def zone_rule(zone: object, one_per_parcel: list[str], floor_area: list[str]) -> str:
+    """Zoning code → allocation rule; patterns are case-insensitive shell globs ("SFR-*")."""
+    z = str(zone or "").strip().upper()
+    if any(fnmatch.fnmatchcase(z, p.upper()) for p in floor_area):
+        return RULE_FLOOR
+    if any(fnmatch.fnmatchcase(z, p.upper()) for p in one_per_parcel):
+        return RULE_ONE
+    return RULE_NONE
+
+
+def _assessor_parcels(h: dict) -> gpd.GeoDataFrame:
+    fields = ["OBJECTID", h["units_field"], h["category_field"]]
+    g = arcgis.query(h["url"], out_fields=",".join(fields))
+    units = pd.to_numeric(g[h["units_field"]], errors="coerce").fillna(0)
+    return gpd.GeoDataFrame(
+        {
+            "parcel_id": h["county"] + ":" + g["OBJECTID"].astype(str),
+            "county": h["county"],
+            "units": units.astype(float),
+            "rule": RULE_ASSESSOR,
+            "category": g[h["category_field"]].fillna("").str.strip(),
+        },
+        geometry=g.geometry.make_valid().values,
+        crs=4326,
+    )
+
+
+def _zoned_parcels(h: dict, extent: BBox, epsg: int) -> gpd.GeoDataFrame:
+    parcels = arcgis.query(h["parcels_url"], extent=extent, out_fields="OBJECTID")
+    zones = arcgis.query(h["zoning_url"], extent=extent, out_fields=h["zone_field"])
+    pts = gpd.GeoDataFrame(
+        {"i": range(len(parcels))},
+        geometry=parcels.geometry.make_valid().to_crs(epsg).representative_point().values,
+        crs=epsg,
+    )
+    z = gpd.GeoDataFrame(
+        {"zone": zones[h["zone_field"]]}, geometry=zones.geometry.make_valid().values, crs=4326
+    ).to_crs(epsg)
+    hit = gpd.sjoin(pts, z, how="left", predicate="within").drop_duplicates("i").set_index("i")
+    zone = hit["zone"].reindex(range(len(parcels)))
+    rule = zone.map(lambda v: zone_rule(v, h.get("one_per_parcel", []), h.get("floor_area", [])))
+    return gpd.GeoDataFrame(
+        {
+            "parcel_id": h["county"] + ":" + parcels["OBJECTID"].astype(str).values,
+            "county": h["county"],
+            "units": rule.map({RULE_ONE: 1.0}).fillna(0.0).values,  # floor_area: computed in SQL
+            "rule": rule.values,
+            "category": zone.fillna("").values,
+        },
+        geometry=parcels.geometry.make_valid().values,
+        crs=4326,
+    )
+
+
+def homes(cfg: CityConfig, extent: BBox, force: bool = False) -> Path | None:
+    """Parcels with dwelling units / allocation rule for the counties in the city's `homes:`."""
+    if not cfg.homes:
+        return None
+    out = cfg.raw_dir / "parcels.parquet"
+    if out.exists() and not force:
+        return out
+    parts = []
+    for h in cfg.homes:
+        if h["kind"] == "assessor":
+            parts.append(_assessor_parcels(h))
+        else:
+            parts.append(_zoned_parcels(h, extent, cfg.analysis_epsg))
+        print(f"[homes] {h['county']}: {len(parts[-1])} parcels ({h['source']})")
+    g = gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs=4326)
+    g = g[g.geometry.notna() & ~g.geometry.is_empty]
+    g = g[g.geom_type.isin(["Polygon", "MultiPolygon"])].reset_index(drop=True)
+    g.to_parquet(out)
+    write_meta(
+        out,
+        source="; ".join(h["source"] for h in cfg.homes),
+        url=[h.get("url") or [h["parcels_url"], h["zoning_url"]] for h in cfg.homes],
+        fields_requested=[
+            [h["units_field"], h["category_field"]]
+            if h["kind"] == "assessor"
+            else [h["zone_field"]]
+            for h in cfg.homes
+        ],
+        note="owner and address fields are not fetched",
+        rows=len(g),
+        units_by_county=g.groupby("county")["units"].sum().round().to_dict(),
+        licence="not stated; used with attribution",
+    )
     return out
 
 
@@ -242,3 +338,5 @@ def run(cfg: CityConfig, source: str, extent: BBox, force: bool = False) -> None
         hrsa(cfg, extent, force)
     elif source == "parks":
         city_parks(cfg, force)
+    elif source == "homes":
+        homes(cfg, extent, force)

@@ -112,6 +112,15 @@ def stats(cfg: CityConfig) -> pd.Series:
         return pd.read_sql(text(q), con).iloc[0]
 
 
+def _subtype_sql(subtypes: list[str | None]) -> str:
+    """`residential.parcel_subtypes` → boolean SQL on b.subtype (None = no subtype)."""
+    named = [f"'{t}'" for t in subtypes if t is not None]
+    parts = (["b.subtype IS NULL"] if None in subtypes else []) + (
+        [f"b.subtype IN ({','.join(named)})"] if named else []
+    )
+    return "(" + " OR ".join(parts or ["false"]) + ")"
+
+
 def distances(cfg: CityConfig) -> None:
     """Origins (30), destinations (40), network distances + counts + service areas (50)."""
     s = cfg.scoring
@@ -125,6 +134,9 @@ def distances(cfg: CityConfig) -> None:
         max_area_m2=r["unclassified_max_area_m2"],
         floor_height_m=r["floor_height_m"],
         grid_m=r["fallback_grid_m"],
+        m2_per_unit=r["m2_per_unit"],
+        parcel_subtype_sql=_subtype_sql(r["parcel_subtypes"]),
+        parcel_exclude_classes=",".join(f"'{c}'" for c in r["parcel_exclude_classes"]),
         max_snap_m=snap,
     )
     print("[network] destinations …", flush=True)

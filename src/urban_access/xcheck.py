@@ -540,11 +540,89 @@ def parks_review(cfg: CityConfig) -> pd.DataFrame:
     return _sorted(out, "source_name")
 
 
+HOMES_SQL = """
+WITH heur AS (
+    SELECT h.id, h.bg_geoid, g.pop_total * h.weight / sum(h.weight) OVER (PARTITION BY h.bg_geoid)
+           AS pop
+    FROM res_heuristic h JOIN block_groups g ON g.geoid = h.bg_geoid
+), now AS (
+    SELECT o.ref AS id, o.bg_geoid, o.pop FROM origins o WHERE o.kind = 'building'
+), moved AS (
+    SELECT coalesce(n.bg_geoid, h.bg_geoid) AS bg_geoid,
+           abs(coalesce(n.pop, 0) - coalesce(h.pop, 0)) AS d
+    FROM now n FULL JOIN heur h ON h.id = n.id
+)
+SELECT g.geoid, left(g.geoid, 5) AS county, g.pop_total,
+       (SELECT count(*) FROM res_heuristic h WHERE h.bg_geoid = g.geoid) AS heuristic_homes,
+       (SELECT count(*) FROM res_buildings r WHERE r.bg_geoid = g.geoid
+            AND r.kind IN ('parcel_building', 'res_class', 'unclassified')) AS building_homes,
+       (SELECT count(*) FROM res_buildings r WHERE r.bg_geoid = g.geoid
+            AND r.kind = 'parcel_point') AS parcel_points,
+       (SELECT sum(r.weight) FROM res_buildings r WHERE r.bg_geoid = g.geoid
+            AND r.kind LIKE 'parcel%%') AS parcel_units,
+       (SELECT sum(d) / 2 FROM moved m WHERE m.bg_geoid = g.geoid) AS pop_moved
+FROM block_groups g WHERE g.pop_total > 0 ORDER BY g.geoid
+"""
+
+
+def homes_review(cfg: CityConfig) -> pd.DataFrame:
+    """Per populated block group: footprint heuristic vs parcel dwelling units vs ACS households.
+
+    Reads the tables built by `make network` (sql/30_origins.sql), so run after a build.
+    """
+    from sqlalchemy import text
+
+    from . import db
+
+    with db.engine().connect() as con:
+        con.exec_driver_sql(f'SET search_path = "{cfg.slug}", public')
+        out = pd.read_sql(text(HOMES_SQL), con)
+    acs = pd.read_parquet(cfg.raw_dir / "acs.parquet")
+    acs = acs.reset_index() if "geoid" not in acs else acs
+    out = out.merge(acs[["geoid", "hh_total", "hh_total_moe"]], on="geoid", how="left")
+    out["units_per_household"] = (out["parcel_units"] / out["hh_total"]).round(2)
+    out["pop_moved_pct"] = (100 * out["pop_moved"] / out["pop_total"]).round(1)
+    out["flag"] = ""
+    lo, hi = cfg.scoring.xcheck.get("homes_units_per_hh", [0.8, 1.5])
+    off = out["units_per_household"].notna() & ~out["units_per_household"].between(lo, hi)
+    out.loc[off, "flag"] = f"units/households outside {lo}-{hi}"
+    pph = out["pop_total"] / out["hh_total"]
+    out.loc[pph > 4, "flag"] = (
+        out.loc[pph > 4, "flag"] + "; residents/household > 4 (group quarters?)"
+    ).str.lstrip("; ")
+    out.insert(1, "suggestion", ["review" if f else "ok" for f in out["flag"]])
+    _homes_diff_layer(cfg)
+    return out.round({"parcel_units": 0, "pop_moved": 0})
+
+
+def _homes_diff_layer(cfg: CityConfig) -> None:
+    """Optional QGIS layer (data/interim/<slug>/homes_diff.gpkg, not committed): buildings that are
+    homes under only one method, and parcel points (dwelling units with no Overture building)."""
+    from . import db
+
+    q = """
+        SELECT h.id, 'heuristic_only' AS diff, h.kind, h.geom FROM res_heuristic h
+        WHERE NOT EXISTS (SELECT 1 FROM res_buildings r WHERE r.id = h.id)
+        UNION ALL
+        SELECT r.id, 'parcel_only', r.kind, r.geom FROM res_buildings r
+        WHERE r.kind = 'parcel_building'
+          AND NOT EXISTS (SELECT 1 FROM res_heuristic h WHERE h.id = r.id)
+        UNION ALL
+        SELECT r.parcel_id, 'parcel_point', r.kind, r.geom FROM res_buildings r
+        WHERE r.kind = 'parcel_point'
+    """
+    with db.engine().connect() as con:
+        con.exec_driver_sql(f'SET search_path = "{cfg.slug}", public')
+        g = gpd.read_postgis(q, con, geom_col="geom")
+    g.to_file(cfg.interim_dir / "homes_diff.gpkg", driver="GPKG")
+
+
 REVIEWS = {
     "schools": (nces.run, schools_review),
     "grocery": (None, grocery_review),
     "healthcare": (None, healthcare_review),
     "parks": (None, parks_review),
+    "homes": (None, homes_review),
 }
 
 

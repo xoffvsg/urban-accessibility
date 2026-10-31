@@ -58,6 +58,12 @@ residential:
   unclassified_max_area_m2: 1500  # ... unless a non-residential place lies inside
   floor_height_m: 3.5             # floors = num_floors, else round(height / 3.5), min 1
   fallback_grid_m: 50             # point grid for a populated block group with no homes
+  # Parcel dwelling units (city config `homes:`; sql/30_origins.sql): units go to buildings whose
+  # point-on-surface lies in the parcel, of at least unclassified_min_area_m2, with one of these
+  # subtypes (None = no subtype) and not one of these classes.
+  parcel_subtypes: [null, residential]
+  parcel_exclude_classes: [garage, garages, carport, shed, roof, parking, shelter, storage_tank, hotel]
+  m2_per_unit: 90                 # floor_area rule: dwelling units = floor area / this
 
 # Equity analysis (src/urban_access/equity.py, notebook 06)
 equity:

@@ -122,7 +122,8 @@ def summary(
             [f"Some park areas: {cfg.xcheck.get('city_parks_source', 'city GIS')}"]
             if cfg.extra_parks
             else []
-        ),
+        )
+        + ([f"Homes: {'; '.join(h['source'] for h in cfg.homes)}"] if cfg.homes else []),
         "basemap_attribution": BASEMAP_ATTRIBUTION,
         "headline": [
             {k: (round(v, 1) if isinstance(v, float) else v) for k, v in h.items()}

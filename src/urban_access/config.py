@@ -128,7 +128,7 @@ class Scoring:
     max_snap_distance_m: float
     dedupe_distance_m: float
     network: dict[str, float] = field(default_factory=dict)
-    residential: dict[str, float] = field(default_factory=dict)
+    residential: dict[str, Any] = field(default_factory=dict)
     equity: dict[str, float] = field(default_factory=lambda: dict(EQUITY_DEFAULTS))
     web: dict[str, Any] = field(default_factory=dict)  # passed through to the web summary
     place_overrides: dict[str, PlaceOverride] = field(default_factory=dict)
@@ -155,11 +155,14 @@ NETWORK_DEFAULTS = {
     "park_access_max_m": 30.0,
     "service_area_buffer_m": 50.0,
 }
-RESIDENTIAL_DEFAULTS = {
+RESIDENTIAL_DEFAULTS: dict[str, Any] = {
     "unclassified_min_area_m2": 40.0,
     "unclassified_max_area_m2": 1500.0,
     "floor_height_m": 3.5,
     "fallback_grid_m": 50.0,
+    "parcel_subtypes": [None, "residential"],
+    "parcel_exclude_classes": ["garage", "garages", "carport", "shed", "roof", "parking"],
+    "m2_per_unit": 90.0,
 }
 EQUITY_DEFAULTS = {
     "mc_draws": 1000.0,
@@ -196,6 +199,7 @@ class CityConfig:
     gates_path: Path | None = None  # GeoJSON lines drawn across gates: status open|closed, note
     xcheck: dict[str, Any] = field(default_factory=dict)  # city-specific cross-check settings
     extra_parks: bool = False  # add city park polygons (xcheck.city_parks_url) to the parks layer
+    homes: list[dict[str, Any]] = field(default_factory=list)  # parcel dwelling-unit sources
 
     @property
     def raw_dir(self) -> Path:
@@ -274,6 +278,26 @@ def _parse_web(raw: dict[str, Any], services: list[str]) -> dict[str, Any]:
     if missing:
         raise ConfigError(f"web: service_colors missing {sorted(missing)}")
     return dict(raw) | {"class_breaks": breaks}
+
+
+def _parse_homes(raw: Any) -> list[dict[str, Any]]:
+    """`homes:` list: per county either an assessor layer (`url` + `units_field`) or Douglas-style
+    `parcels_url` + `zoning_url` + zone patterns."""
+    out = []
+    for i, h in enumerate(raw or []):
+        h = dict(h)
+        if "county" not in h:
+            raise ConfigError(f"homes[{i}]: county (state + county FIPS) is required")
+        h["county"] = str(h["county"])
+        assessor = "url" in h and "units_field" in h
+        zoned = "parcels_url" in h and "zoning_url" in h and "zone_field" in h
+        if assessor == zoned:
+            raise ConfigError(
+                f"homes[{i}]: give url + units_field, or parcels_url + zoning_url + zone_field"
+            )
+        h["kind"] = "assessor" if assessor else "zoning"
+        out.append(h)
+    return out
 
 
 def parse_place_overrides(raw: dict[str, Any] | None) -> dict[str, PlaceOverride]:
@@ -360,7 +384,10 @@ def parse_scoring(
         },
         residential={
             **RESIDENTIAL_DEFAULTS,
-            **{k: float(v) for k, v in (raw.get("residential") or {}).items()},
+            **{
+                k: v if isinstance(v, list) else float(v)
+                for k, v in (raw.get("residential") or {}).items()
+            },
         },
         web=_parse_web(raw.get("web") or {}, list(weights)),
         equity={
@@ -416,6 +443,7 @@ def parse_city(raw: dict[str, Any], scoring_raw: dict[str, Any]) -> CityConfig:
         gates_path=CONFIG_DIR / "cities" / str(raw["gates"]) if raw.get("gates") else None,
         xcheck=dict(raw.get("xcheck") or {}),
         extra_parks=bool(raw.get("extra_parks", False)),
+        homes=_parse_homes(raw.get("homes")),
     )
 
 

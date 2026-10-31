@@ -71,6 +71,13 @@ python -m ipykernel install --user --name urban-access
   in 4.0.1 it returned 506 m for a vertex whose nearest stop is 453 m away. Use a virtual
   super-source joined to every destination at cost 0 and a single-source `pgr_drivingDistance`
   (`sql/50_distances.sql`); `network.check_pairs` re-checks against one-to-many `pgr_dijkstraCost`.
+- **pgRouting cost scales with the number of sources, not destinations reached.** Plain multi-source
+  `pgr_drivingDistance` runs one Dijkstra per start vertex. When only "is group X within r?" matters
+  (a park reached at any of its boundary points), give each group one virtual source with **one-way**
+  zero-cost links to its points (`reverse_cost = -1`, `directed := true`, street edges with
+  `reverse_cost = cost`). Undirected zero-cost links would let routes enter another group's node and
+  cross that park for free. Also: a pipeline distance above the last band (1,600 m) is an **upper
+  bound** (searches stop there), so `check_pairs` comparisons are exact only within it.
 - **DuckDB Python API (recent version in env):** relations from `con.sql(...)` no longer have
   `.fetchone()`. Use `con.sql(...).fetchall()`, `.df()`, `.arrow()`, or `con.execute(sql, params).fetchone()`.
   Prefer `con.execute(sql, params)` with bound parameters for bbox values from config.
@@ -192,6 +199,7 @@ Path pattern: `s3://overturemaps-us-west-2/release/<release>/theme=<theme>/type=
 | `osm_gates.parquet`, `osm_fences.parquet` | OSM via Overpass (`osm.py`, `make osm`) | Overture has no barriers. Gate points (`closed` = access=no / foot=no, not overridden by foot=yes) and fence/wall lines; live data, timestamp in `.meta.json`; ODbL. |
 | `nces_schools.parquet` | NCES EDGE REST (public: CCD locations + admin data, grade span, status) + PSS CSV (private; older year fills survey non-respondents) (`nces.py`, `make xcheck`) | Cross-check only, never a service source. `xcheck.py` pairs places by name + distance → `data/interim/<slug>/xcheck_schools.csv` (`suggestion` add/drop/review/missing); decisions go into `include_names` / `place_overrides`. Public domain. |
 | `snap_retailers.parquet`, `nppes_orgs.parquet`, `hrsa_sites.parquet`, `city_parks.parquet` | USDA SNAP (live ArcGIS layer), CMS NPI Registry API (NPI-2 by `xcheck.nppes_postal_codes`, geocoded with the Census batch geocoder), HRSA sites CSV, city parks ArcGIS layer (`xcheck.city_parks_url`) (`opendata.py`, `arcgis.py`, `make xcheck SOURCE=all`) | Cross-checks → `xcheck_<source>.csv`. Grocery full-service = SNAP Supermarket / Super Store. Healthcare is site-based, not one-to-one: a place is essential when a name-matched NPI within `confirm_m` has an essential taxonomy prefix (`scoring.yaml`). `city_parks` is also an **input**: with `extra_parks: true`, PARK/SPORT polygons overlapping no Overture park are added to `parks` (`db.build_parks`); licence not stated, attributed. `place_overrides` `verified: true` = confirmed by a source (confidence 1.0). |
+| `parcels.parquet` | City config `homes:` (`opendata.homes`, `make homes`, part of `phase1`): Carson City GIS Existing Land Use (`Total_DWUn`, `LU_Categor`); Douglas County GIS parcels (OBJECTID + geometry) + zoning (`ZoningCode`) | **Input** for homes (Phase 2 step 5). Columns `parcel_id, county, units, rule, category`. Owner/address fields never requested; no licence stated, attributed; never committed. |
 
 **Important — Overture schema change:** the `categories` column was removed from places in the
 September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.hierarchy` / `taxonomy.alternates`
@@ -234,15 +242,25 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
    single-source `pgr_drivingDistance` to 1600 m → nearest-destination distance per vertex. Origin
    distance = `snap_m + min(d(source) + frac·len, d(target) + (1−frac)·len)`, or direct along the edge
    when a destination shares it. Parks (Overture land use + `extra_parks` city polygons): boundary points every 25 m within 30 m of a main edge, plus
-   park POIs; `group_key` = one park. Transit: GTFS stops. Per-destination 400 m reach
-   (non-equicost `pgr_drivingDistance`) gives the `n_400m` counts.
-5. **Population allocation (dasymetric)** (`sql/30_origins.sql`). Residential = Overture residential
-   classes (incl. `static_caravan` = mobile homes; not garages), plus unclassified footprints of
-   40–1,500 m² with no open non-residential place inside. Weight = area × floors, floors =
-   `num_floors`, else `round(height / 3.5)`, min 1. Allocate each block group's ACS population by
-   weight (building → BG by `ST_PointOnSurface`). Fallback: 50 m point grid for a populated BG with no
-   homes. Thresholds live in `scoring.yaml` `residential:`. Band scoring and aggregation run in Python
-   (`scoring.py`, tested), not SQL.
+   park POIs; `group_key` = one park. Transit: GTFS stops. Per-destination 400 m reach gives the
+   `n_400m` counts: **one search per `group_key`**, from a virtual node with one-way zero-cost links
+   to the group's access points (`group_src` / `group_links`, directed search), not one per access
+   point (parks: 117 searches instead of ~4,300).
+5. **Population allocation (dasymetric)** (`sql/30_origins.sql`). Homes come from **parcel dwelling
+   units** where the city config has a `homes:` source (`opendata.homes`, `make homes` → `parcels`):
+   Carson City assessor `Total_DWUn`; Douglas County one home per parcel in residential zones (largest
+   building), MFR by floor area / `m2_per_unit`, none in commercial/industrial/public zones. Units go
+   to eligible buildings in the parcel (point-on-surface, ≥ 40 m², subtype in `parcel_subtypes`, class
+   not in `parcel_exclude_classes`): 1 unit → largest building, more → by area × floors; assessor
+   units with no building → a parcel point. Counties without a source keep the **footprint
+   heuristic** (`res_heuristic`, always built for comparison): Overture residential classes (incl.
+   `static_caravan`; not garages) plus unclassified footprints of 40–1,500 m² with no open
+   non-residential place inside, weight = area × floors (floors = `num_floors`, else
+   `round(height / 3.5)`, min 1). Each BG's ACS population is spread by weight (building → BG by
+   `ST_PointOnSurface`). Fallback: 50 m point grid for a populated BG with no homes. Settings in
+   `scoring.yaml` `residential:`; review `xcheck_homes.csv` (units vs ACS households). Parcel layers
+   also hold owner names: request only the configured fields. Band scoring and aggregation run in
+   Python (`scoring.py`, tested), not SQL.
 6. **Per block group metrics** (one row per block group):
    - `pop_total`, ACS equity fields (+MOE), tract GEOID, neighborhood name if available
    - for each service `s`: `<s>_score` (population-weighted mean of band value × 100),

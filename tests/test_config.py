@@ -137,3 +137,28 @@ def test_place_override_name():
 
     o = parse_place_overrides({"0eb6007c-cb59": {"drop": True, "name": "Cancer Center"}})
     assert o["0eb6007c-cb59"].name == "Cancer Center"
+
+
+def test_parse_homes():
+    import pytest
+
+    from urban_access.config import ConfigError, _parse_homes
+
+    h = _parse_homes(
+        [
+            {"county": 32510, "url": "u", "units_field": "Total_DWUn", "category_field": "LU"},
+            {"county": "32005", "parcels_url": "p", "zoning_url": "z", "zone_field": "ZoningCode"},
+        ]
+    )
+    assert [(x["county"], x["kind"]) for x in h] == [("32510", "assessor"), ("32005", "zoning")]
+    with pytest.raises(ConfigError):
+        _parse_homes([{"county": "1", "url": "u"}])  # neither form complete
+
+
+def test_subtype_sql():
+    from urban_access.network import _subtype_sql
+
+    assert (
+        _subtype_sql([None, "residential"]) == "(b.subtype IS NULL OR b.subtype IN ('residential'))"
+    )
+    assert _subtype_sql([]) == "(false)"

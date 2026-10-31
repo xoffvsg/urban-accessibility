@@ -34,6 +34,8 @@ the bbox), buffered 2 km so services just outside still count.
 | CMS NPPES organizations (cross-check) | 732 NPIs in 5 ZIP codes, 416 geocoded inside the extent | [NPI Registry API](https://npiregistry.cms.hhs.gov/api-page), geocoded with the [Census Geocoder](https://geocoding.geo.census.gov/), fetched 2026-10-31 | Public (CMS); geocoder public domain |
 | HRSA health center sites (cross-check) | 3 sites | [data.hrsa.gov](https://data.hrsa.gov/data/download) service delivery sites | Public domain |
 | Carson City parks | 110 polygons (11 added to the parks layer) | Carson City GIS "Carson City Parks and Open Space" (2023) | No licence stated; used with attribution |
+| Carson City land use (homes) | 21,271 parcels, 24,734 dwelling units | Carson City GIS "Existing Land Use" (assessor, 2024): dwelling units and land-use category only | No licence stated; used with attribution; owner fields not used |
+| Douglas County zoning and parcels (homes) | 8,358 parcels | Douglas County GIS zoning + parcel outlines: zoning code and geometry only | No licence stated; used with attribution; owner fields not used |
 | JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
 
 Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
@@ -87,11 +89,19 @@ denied, split at Overture connectors into 36,346 undirected edges (cost = length
 and loaded into PostGIS. Routing uses the largest connected component, which holds 98.8 % of the network
 length. pgRouting 4.0.1 computes the distances.
 
-**Origins: where people live.** Each block group's ACS population is spread over its residential
-buildings (dasymetric allocation): 16,735 classified homes, including mobile homes, plus 5,533
-unclassified house-sized footprints. Each building is weighted by footprint area × floors. Access is
-measured from every home and averaged per block group, weighted by population, so a block group's empty
-hills don't count as people without access.
+**Origins: where people live.** Each block group's ACS population is spread over its homes
+(dasymetric allocation), placed from parcel dwelling units: Carson City's land-use layer gives the
+dwelling units of each parcel (24,734 in total, close to the Census count of households), and in
+Douglas County each parcel in a residential zone counts as one home (multi-family zones by floor
+area). A parcel's units go to its main building, or are shared between its buildings when there are
+several; sheds, garages and buildings on commercial or vacant parcels get none. That gives 19,836
+home buildings plus 1,578 parcels with dwelling units but no Overture footprint of their own, placed
+at the parcel (mostly small single-unit lots of about 365 m²: likely townhouses whose shared building
+is counted on a neighbouring lot, or homes newer than the footprints). Across block groups, parcel units per ACS household fall between 0.74 and
+1.75, mostly 0.9–1.3. Access is measured from every home and averaged per block group, weighted by
+population, so a block group's empty hills don't count as people without access. (Before the parcel
+data, homes were guessed from building footprints: in Douglas County that counted 25–45 % more homes
+than households, because sheds and barns were included.)
 
 **Distances.** Homes and services are snapped to the nearest walkable edge, not the nearest
 intersection, because blocks here are often 100–200 m long. The distance to the nearest service of each
@@ -129,28 +139,28 @@ that Overture tags as general clinics.
 All numbers are for the 62,051 residents of the 45 populated scored block groups. Ranges in brackets
 are the 5th–95th percentiles of 1,000 Monte Carlo draws from the ACS margins of error.
 
-**A 5-minute walk to a grocery store is rare.** 1,260 residents (2.0 % [1.8–2.2]) live within 400 m
-of one of the 13 full-service grocery stores, measured along the walking network; 47.1 % have none
-within 1,600 m (about 20 minutes). Another 3,690 (5.9 %) have a convenience store but no grocery
-within 400 m. Transit is the most walkable service (32.7 % within 400 m of a JAC stop), then parks
-(26.9 %); healthcare (2.5 %) and K-8 schools (3.6 %) are as rare as groceries.
+**A 5-minute walk to a grocery store is rare.** 1,390 residents (2.2 % [2.0–2.5]) live within 400 m
+of one of the 13 full-service grocery stores, measured along the walking network; 44.1 % have none
+within 1,600 m (about 20 minutes). Another 4,590 (7.4 %) have a convenience store but no grocery
+within 400 m. Transit is the most walkable service (33.8 % within 400 m of a JAC stop), then parks
+(25.4 %); healthcare (3.5 %) and K-8 schools (3.6 %) are almost as rare as groceries.
 
 **Access is better where incomes are lower.** The lowest-income third of residents (block-group median
-household income $34k–61k) has a mean access score of 48.1; the highest-income third ($82k–143k) has
-23.7. Across block groups, Spearman ρ between the access score and median household income is −0.59
-(MC range −0.60 to −0.31), and +0.49 with the share of residents below 200 % of the poverty line.
-Residents below that line are more likely than average to be within 400 m of a transit stop (46.4 %
-[42.7–50.0] vs 32.7 %) and of a grocery store (3.5 % vs 2.0 %); so are households without a car
-(43.5 % and 3.3 %).
+household income $34k–61k) has a mean access score of 48.7; the highest-income third ($82k–143k) has
+24.6. Across block groups, Spearman ρ between the access score and median household income is −0.59
+(MC range −0.60 to −0.31), and +0.48 with the share of residents below 200 % of the poverty line.
+Residents below that line are more likely than average to be within 400 m of a transit stop (47.5 %
+[43.7–51.2] vs 33.8 %) and of a grocery store (4.0 % vs 2.2 %); so are households without a car
+(46.5 % and 4.3 %).
 
-**Older residents have less access.** 1.6 % [1.3–1.8] of residents 65+ live within 400 m of a
-grocery store, and their mean access score is 31.5 against 34.8 for all residents (ρ with the 65+
-share: −0.35).
+**Older residents have less access.** 1.9 % [1.6–2.2] of residents 65+ live within 400 m of a
+grocery store, and their mean access score is 32.4 against 35.5 for all residents (ρ with the 65+
+share: −0.33).
 
-**Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.65,
-p = 0.0001, 9,999 permutations). Local Moran's I finds 9 low-low block groups at p < 0.05 (5 after a
+**Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.66,
+p = 0.0001, 9,999 permutations). Local Moran's I finds 9 low-low block groups at p < 0.05 (6 after a
 false-discovery-rate correction), all between 39.03 °N and 39.15 °N: the Douglas County block groups
-and three in the south of Carson City. The 7 high-high block groups (4 after correction) lie further
+and three in the south of Carson City. The 8 high-high block groups (4 after correction) lie further
 north, at 39.17–39.18 °N.
 
 These are block-group comparisons (ecological inference): a group is assumed to live in its block
