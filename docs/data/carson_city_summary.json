@@ -1,0 +1,931 @@
+{
+ "city": "Carson City, NV",
+ "slug": "carson_city",
+ "bounds": [
+  -119.81579,
+  39.02667,
+  -119.68607,
+  39.20729
+ ],
+ "overture_release": "2026-10-21.0",
+ "acs_year": 2024,
+ "weights": {
+  "grocery": 0.25,
+  "healthcare": 0.2,
+  "transit": 0.2,
+  "schools": 0.2,
+  "parks": 0.15
+ },
+ "services": [
+  "grocery",
+  "healthcare",
+  "transit",
+  "schools",
+  "parks"
+ ],
+ "bands": [
+  {
+   "max_m": 400.0,
+   "value": 1.0
+  },
+  {
+   "max_m": 800.0,
+   "value": 0.6
+  },
+  {
+   "max_m": 1600.0,
+   "value": 0.3
+  }
+ ],
+ "web": {
+  "class_breaks": [
+   0.0,
+   10.0,
+   20.0,
+   30.0,
+   40.0,
+   50.0,
+   60.0,
+   100.0
+  ],
+  "class_colors": [
+   "#440154",
+   "#443983",
+   "#31688e",
+   "#21918c",
+   "#35b779",
+   "#90d743",
+   "#fde725"
+  ],
+  "no_residents_color": "#d9d9d9",
+  "service_colors": {
+   "grocery": "#E69F00",
+   "healthcare": "#D55E00",
+   "schools": "#CC79A7",
+   "transit": "#0072B2",
+   "parks": "#009E73",
+   "convenience": "#F0E442"
+  },
+  "cv_flag_pct": 30,
+  "basemap_style": "https://tiles.openfreemap.org/styles/positron"
+ },
+ "attribution": [
+  "Places: Overture Maps Foundation (CDLA-Permissive-2.0)",
+  "Buildings, roads, land use: Overture Maps / OpenStreetMap contributors (ODbL)",
+  "Gates and fences: \u00a9 OpenStreetMap contributors (ODbL)",
+  "Block groups and ACS: US Census Bureau",
+  "Transit stops: Jump Around Carson (GTFS)"
+ ],
+ "basemap_attribution": "Basemap: OpenFreeMap \u00a9 OpenMapTiles \u00a9 OpenStreetMap contributors",
+ "headline": [
+  {
+   "metric": "convenience_le_400m",
+   "pct": 6.4,
+   "pct_p05": 6.0,
+   "pct_p50": 6.4,
+   "pct_p95": 6.8,
+   "residents": 3971.9
+  },
+  {
+   "metric": "grocery_le_400m",
+   "pct": 2.1,
+   "pct_p05": 1.9,
+   "pct_p50": 2.1,
+   "pct_p95": 2.3,
+   "residents": 1287.8
+  },
+  {
+   "metric": "healthcare_le_400m",
+   "pct": 2.2,
+   "pct_p05": 2.0,
+   "pct_p50": 2.2,
+   "pct_p95": 2.4,
+   "residents": 1339.4
+  },
+  {
+   "metric": "parks_le_400m",
+   "pct": 23.0,
+   "pct_p05": 22.0,
+   "pct_p50": 23.0,
+   "pct_p95": 24.0,
+   "residents": 14276.5
+  },
+  {
+   "metric": "schools_le_400m",
+   "pct": 3.3,
+   "pct_p05": 2.9,
+   "pct_p50": 3.3,
+   "pct_p95": 3.6,
+   "residents": 2018.4
+  },
+  {
+   "metric": "transit_le_400m",
+   "pct": 32.7,
+   "pct_p05": 31.2,
+   "pct_p50": 32.7,
+   "pct_p95": 34.1,
+   "residents": 20270.5
+  },
+  {
+   "metric": "grocery_none_le_1600m",
+   "pct": 41.1,
+   "pct_p05": 39.4,
+   "pct_p50": 41.0,
+   "pct_p95": 42.8,
+   "residents": 25475.1
+  },
+  {
+   "metric": "convenience_not_grocery_le_400m",
+   "pct": 5.9,
+   "pct_p05": 5.5,
+   "pct_p50": 5.9,
+   "pct_p95": 6.3,
+   "residents": 3687.0
+  }
+ ],
+ "block_groups": [
+  {
+   "geoid": "320050022005",
+   "label": "Tract 22, BG 5 (Douglas County)",
+   "pop_total": 1334,
+   "access_score": 7.7,
+   "grocery_score": 0.0,
+   "healthcare_score": 0.0,
+   "transit_score": 0.0,
+   "schools_score": 0.0,
+   "parks_score": 51.0,
+   "bbox": [
+    -119.77994,
+    39.04029,
+    -119.74051,
+    39.08698
+   ]
+  },
+  {
+   "geoid": "325100006013",
+   "label": "Tract 6.01, BG 3 (Carson City)",
+   "pop_total": 0,
+   "access_score": null,
+   "grocery_score": null,
+   "healthcare_score": null,
+   "transit_score": null,
+   "schools_score": null,
+   "parks_score": null,
+   "bbox": [
+    -119.73975,
+    39.15522,
+    -119.72787,
+    39.16185
+   ]
+  },
+  {
+   "geoid": "320050022004",
+   "label": "Tract 22, BG 4 (Douglas County)",
+   "pop_total": 1265,
+   "access_score": 7.6,
+   "grocery_score": 0.0,
+   "healthcare_score": 0.0,
+   "transit_score": 0.0,
+   "schools_score": 0.0,
+   "parks_score": 50.6,
+   "bbox": [
+    -119.77989,
+    39.02667,
+    -119.73326,
+    39.0413
+   ]
+  },
+  {
+   "geoid": "320050022001",
+   "label": "Tract 22, BG 1 (Douglas County)",
+   "pop_total": 1214,
+   "access_score": 6.1,
+   "grocery_score": 0.0,
+   "healthcare_score": 0.0,
+   "transit_score": 0.0,
+   "schools_score": 10.8,
+   "parks_score": 26.3,
+   "bbox": [
+    -119.74254,
+    39.03578,
+    -119.68607,
+    39.08506
+   ]
+  },
+  {
+   "geoid": "320050020002",
+   "label": "Tract 20, BG 2 (Douglas County)",
+   "pop_total": 2492,
+   "access_score": 13.4,
+   "grocery_score": 12.4,
+   "healthcare_score": 0.0,
+   "transit_score": 0.0,
+   "schools_score": 0.6,
+   "parks_score": 68.2,
+   "bbox": [
+    -119.79626,
+    39.07389,
+    -119.77477,
+    39.10188
+   ]
+  },
+  {
+   "geoid": "320050021001",
+   "label": "Tract 21, BG 1 (Douglas County)",
+   "pop_total": 1954,
+   "access_score": 8.8,
+   "grocery_score": 2.4,
+   "healthcare_score": 0.4,
+   "transit_score": 0.4,
+   "schools_score": 0.0,
+   "parks_score": 53.5,
+   "bbox": [
+    -119.7791,
+    39.07384,
+    -119.75213,
+    39.11401
+   ]
+  },
+  {
+   "geoid": "320050020001",
+   "label": "Tract 20, BG 1 (Douglas County)",
+   "pop_total": 786,
+   "access_score": 17.2,
+   "grocery_score": 28.4,
+   "healthcare_score": 0.4,
+   "transit_score": 0.4,
+   "schools_score": 13.2,
+   "parks_score": 48.9,
+   "bbox": [
+    -119.81579,
+    39.08715,
+    -119.77324,
+    39.11396
+   ]
+  },
+  {
+   "geoid": "325100005013",
+   "label": "Tract 5.01, BG 3 (Carson City)",
+   "pop_total": 1585,
+   "access_score": 46.8,
+   "grocery_score": 31.8,
+   "healthcare_score": 45.8,
+   "transit_score": 98.8,
+   "schools_score": 21.7,
+   "parks_score": 37.3,
+   "bbox": [
+    -119.76731,
+    39.17917,
+    -119.76039,
+    39.18791
+   ]
+  },
+  {
+   "geoid": "325100006021",
+   "label": "Tract 6.02, BG 1 (Carson City)",
+   "pop_total": 1867,
+   "access_score": 44.4,
+   "grocery_score": 36.0,
+   "healthcare_score": 35.7,
+   "transit_score": 65.1,
+   "schools_score": 21.4,
+   "parks_score": 73.5,
+   "bbox": [
+    -119.76115,
+    39.16129,
+    -119.75096,
+    39.17202
+   ]
+  },
+  {
+   "geoid": "325100006012",
+   "label": "Tract 6.01, BG 2 (Carson City)",
+   "pop_total": 1908,
+   "access_score": 37.8,
+   "grocery_score": 17.7,
+   "healthcare_score": 22.6,
+   "transit_score": 57.2,
+   "schools_score": 35.6,
+   "parks_score": 68.8,
+   "bbox": [
+    -119.76707,
+    39.14992,
+    -119.75094,
+    39.16132
+   ]
+  },
+  {
+   "geoid": "325100006022",
+   "label": "Tract 6.02, BG 2 (Carson City)",
+   "pop_total": 1171,
+   "access_score": 32.4,
+   "grocery_score": 19.5,
+   "healthcare_score": 31.0,
+   "transit_score": 41.1,
+   "schools_score": 25.7,
+   "parks_score": 53.0,
+   "bbox": [
+    -119.75575,
+    39.16093,
+    -119.72407,
+    39.17541
+   ]
+  },
+  {
+   "geoid": "325100005015",
+   "label": "Tract 5.01, BG 5 (Carson City)",
+   "pop_total": 949,
+   "access_score": 47.6,
+   "grocery_score": 40.1,
+   "healthcare_score": 43.3,
+   "transit_score": 44.7,
+   "schools_score": 30.7,
+   "parks_score": 92.3,
+   "bbox": [
+    -119.76043,
+    39.17917,
+    -119.74224,
+    39.19047
+   ]
+  },
+  {
+   "geoid": "325100006011",
+   "label": "Tract 6.01, BG 1 (Carson City)",
+   "pop_total": 1213,
+   "access_score": 30.9,
+   "grocery_score": 19.1,
+   "healthcare_score": 19.6,
+   "transit_score": 28.2,
+   "schools_score": 39.2,
+   "parks_score": 57.8,
+   "bbox": [
+    -119.76276,
+    39.14991,
+    -119.73365,
+    39.1628
+   ]
+  },
+  {
+   "geoid": "325100009004",
+   "label": "Tract 9, BG 4 (Carson City)",
+   "pop_total": 1142,
+   "access_score": 38.9,
+   "grocery_score": 37.9,
+   "healthcare_score": 49.5,
+   "transit_score": 69.3,
+   "schools_score": 7.1,
+   "parks_score": 28.0,
+   "bbox": [
+    -119.73328,
+    39.17659,
+    -119.71917,
+    39.18645
+   ]
+  },
+  {
+   "geoid": "325100010013",
+   "label": "Tract 10.01, BG 3 (Carson City)",
+   "pop_total": 1400,
+   "access_score": 56.6,
+   "grocery_score": 52.0,
+   "healthcare_score": 36.9,
+   "transit_score": 74.2,
+   "schools_score": 52.2,
+   "parks_score": 73.4,
+   "bbox": [
+    -119.73323,
+    39.17075,
+    -119.7238,
+    39.18032
+   ]
+  },
+  {
+   "geoid": "325100001001",
+   "label": "Tract 1, BG 1 (Carson City)",
+   "pop_total": 1002,
+   "access_score": 55.1,
+   "grocery_score": 28.3,
+   "healthcare_score": 60.6,
+   "transit_score": 67.4,
+   "schools_score": 55.3,
+   "parks_score": 75.6,
+   "bbox": [
+    -119.7849,
+    39.15998,
+    -119.76106,
+    39.17046
+   ]
+  },
+  {
+   "geoid": "325100001002",
+   "label": "Tract 1, BG 2 (Carson City)",
+   "pop_total": 1108,
+   "access_score": 40.7,
+   "grocery_score": 2.4,
+   "healthcare_score": 32.2,
+   "transit_score": 48.5,
+   "schools_score": 85.5,
+   "parks_score": 45.4,
+   "bbox": [
+    -119.78155,
+    39.15706,
+    -119.76868,
+    39.16396
+   ]
+  },
+  {
+   "geoid": "325100001003",
+   "label": "Tract 1, BG 3 (Carson City)",
+   "pop_total": 737,
+   "access_score": 37.7,
+   "grocery_score": 21.9,
+   "healthcare_score": 30.6,
+   "transit_score": 56.6,
+   "schools_score": 36.3,
+   "parks_score": 50.1,
+   "bbox": [
+    -119.77986,
+    39.15383,
+    -119.767,
+    39.1613
+   ]
+  },
+  {
+   "geoid": "325100002001",
+   "label": "Tract 2, BG 1 (Carson City)",
+   "pop_total": 2189,
+   "access_score": 43.7,
+   "grocery_score": 23.5,
+   "healthcare_score": 37.3,
+   "transit_score": 77.7,
+   "schools_score": 29.8,
+   "parks_score": 59.4,
+   "bbox": [
+    -119.78404,
+    39.17916,
+    -119.76691,
+    39.19061
+   ]
+  },
+  {
+   "geoid": "325100002003",
+   "label": "Tract 2, BG 3 (Carson City)",
+   "pop_total": 916,
+   "access_score": 58.3,
+   "grocery_score": 23.5,
+   "healthcare_score": 70.9,
+   "transit_score": 77.6,
+   "schools_score": 51.0,
+   "parks_score": 83.2,
+   "bbox": [
+    -119.78256,
+    39.16851,
+    -119.7669,
+    39.17557
+   ]
+  },
+  {
+   "geoid": "325100009002",
+   "label": "Tract 9, BG 2 (Carson City)",
+   "pop_total": 1951,
+   "access_score": 14.1,
+   "grocery_score": 5.8,
+   "healthcare_score": 12.4,
+   "transit_score": 27.3,
+   "schools_score": 1.7,
+   "parks_score": 29.2,
+   "bbox": [
+    -119.74725,
+    39.18232,
+    -119.70377,
+    39.20184
+   ]
+  },
+  {
+   "geoid": "325100004002",
+   "label": "Tract 4, BG 2 (Carson City)",
+   "pop_total": 1128,
+   "access_score": 31.0,
+   "grocery_score": 17.6,
+   "healthcare_score": 26.0,
+   "transit_score": 52.3,
+   "schools_score": 1.5,
+   "parks_score": 71.2,
+   "bbox": [
+    -119.76848,
+    39.19,
+    -119.74716,
+    39.20263
+   ]
+  },
+  {
+   "geoid": "325100004003",
+   "label": "Tract 4, BG 3 (Carson City)",
+   "pop_total": 1585,
+   "access_score": 35.1,
+   "grocery_score": 38.3,
+   "healthcare_score": 25.7,
+   "transit_score": 76.7,
+   "schools_score": 0.0,
+   "parks_score": 33.7,
+   "bbox": [
+    -119.7772,
+    39.19061,
+    -119.76585,
+    39.19846
+   ]
+  },
+  {
+   "geoid": "325100005012",
+   "label": "Tract 5.01, BG 2 (Carson City)",
+   "pop_total": 1175,
+   "access_score": 53.3,
+   "grocery_score": 50.0,
+   "healthcare_score": 53.5,
+   "transit_score": 94.7,
+   "schools_score": 1.2,
+   "parks_score": 73.0,
+   "bbox": [
+    -119.76601,
+    39.18246,
+    -119.75813,
+    39.19073
+   ]
+  },
+  {
+   "geoid": "325100005022",
+   "label": "Tract 5.02, BG 2 (Carson City)",
+   "pop_total": 749,
+   "access_score": 54.5,
+   "grocery_score": 41.6,
+   "healthcare_score": 42.7,
+   "transit_score": 97.2,
+   "schools_score": 30.4,
+   "parks_score": 67.1,
+   "bbox": [
+    -119.76443,
+    39.17038,
+    -119.74944,
+    39.17677
+   ]
+  },
+  {
+   "geoid": "325100008002",
+   "label": "Tract 8, BG 2 (Carson City)",
+   "pop_total": 1152,
+   "access_score": 22.6,
+   "grocery_score": 3.7,
+   "healthcare_score": 20.6,
+   "transit_score": 40.4,
+   "schools_score": 9.0,
+   "parks_score": 51.3,
+   "bbox": [
+    -119.7731,
+    39.09299,
+    -119.746,
+    39.12125
+   ]
+  },
+  {
+   "geoid": "325100009001",
+   "label": "Tract 9, BG 1 (Carson City)",
+   "pop_total": 698,
+   "access_score": 32.0,
+   "grocery_score": 3.1,
+   "healthcare_score": 31.7,
+   "transit_score": 89.9,
+   "schools_score": 0.0,
+   "parks_score": 45.7,
+   "bbox": [
+    -119.74263,
+    39.18643,
+    -119.73323,
+    39.19036
+   ]
+  },
+  {
+   "geoid": "325100002002",
+   "label": "Tract 2, BG 2 (Carson City)",
+   "pop_total": 912,
+   "access_score": 52.5,
+   "grocery_score": 3.9,
+   "healthcare_score": 47.7,
+   "transit_score": 85.7,
+   "schools_score": 67.0,
+   "parks_score": 76.2,
+   "bbox": [
+    -119.77982,
+    39.17398,
+    -119.76687,
+    39.18004
+   ]
+  },
+  {
+   "geoid": "325100005021",
+   "label": "Tract 5.02, BG 1 (Carson City)",
+   "pop_total": 751,
+   "access_score": 49.5,
+   "grocery_score": 38.1,
+   "healthcare_score": 47.8,
+   "transit_score": 92.1,
+   "schools_score": 31.9,
+   "parks_score": 37.7,
+   "bbox": [
+    -119.76695,
+    39.17039,
+    -119.76245,
+    39.17921
+   ]
+  },
+  {
+   "geoid": "325100008001",
+   "label": "Tract 8, BG 1 (Carson City)",
+   "pop_total": 1488,
+   "access_score": 27.8,
+   "grocery_score": 18.6,
+   "healthcare_score": 10.2,
+   "transit_score": 55.9,
+   "schools_score": 4.7,
+   "parks_score": 59.8,
+   "bbox": [
+    -119.77261,
+    39.11675,
+    -119.74599,
+    39.13386
+   ]
+  },
+  {
+   "geoid": "325100007021",
+   "label": "Tract 7.02, BG 1 (Carson City)",
+   "pop_total": 1818,
+   "access_score": 39.8,
+   "grocery_score": 41.6,
+   "healthcare_score": 9.1,
+   "transit_score": 90.2,
+   "schools_score": 16.1,
+   "parks_score": 42.0,
+   "bbox": [
+    -119.76969,
+    39.13384,
+    -119.76351,
+    39.14192
+   ]
+  },
+  {
+   "geoid": "325100007012",
+   "label": "Tract 7.01, BG 2 (Carson City)",
+   "pop_total": 1185,
+   "access_score": 20.0,
+   "grocery_score": 2.3,
+   "healthcare_score": 0.6,
+   "transit_score": 23.7,
+   "schools_score": 48.3,
+   "parks_score": 32.5,
+   "bbox": [
+    -119.75194,
+    39.13992,
+    -119.73978,
+    39.15063
+   ]
+  },
+  {
+   "geoid": "325100005014",
+   "label": "Tract 5.01, BG 4 (Carson City)",
+   "pop_total": 1829,
+   "access_score": 44.3,
+   "grocery_score": 32.5,
+   "healthcare_score": 33.1,
+   "transit_score": 46.9,
+   "schools_score": 49.6,
+   "parks_score": 68.3,
+   "bbox": [
+    -119.76273,
+    39.17513,
+    -119.74897,
+    39.18554
+   ]
+  },
+  {
+   "geoid": "325100009003",
+   "label": "Tract 9, BG 3 (Carson City)",
+   "pop_total": 1872,
+   "access_score": 42.2,
+   "grocery_score": 31.4,
+   "healthcare_score": 44.7,
+   "transit_score": 79.7,
+   "schools_score": 8.5,
+   "parks_score": 51.7,
+   "bbox": [
+    -119.74261,
+    39.17541,
+    -119.73323,
+    39.18646
+   ]
+  },
+  {
+   "geoid": "325100010012",
+   "label": "Tract 10.01, BG 2 (Carson City)",
+   "pop_total": 2024,
+   "access_score": 62.8,
+   "grocery_score": 59.2,
+   "healthcare_score": 52.6,
+   "transit_score": 100.0,
+   "schools_score": 38.7,
+   "parks_score": 65.1,
+   "bbox": [
+    -119.73795,
+    39.1686,
+    -119.73042,
+    39.17659
+   ]
+  },
+  {
+   "geoid": "325100010023",
+   "label": "Tract 10.02, BG 3 (Carson City)",
+   "pop_total": 486,
+   "access_score": 21.9,
+   "grocery_score": 16.1,
+   "healthcare_score": 12.5,
+   "transit_score": 19.4,
+   "schools_score": 15.7,
+   "parks_score": 55.7,
+   "bbox": [
+    -119.72398,
+    39.17227,
+    -119.69591,
+    39.18874
+   ]
+  },
+  {
+   "geoid": "325100010022",
+   "label": "Tract 10.02, BG 2 (Carson City)",
+   "pop_total": 1926,
+   "access_score": 25.9,
+   "grocery_score": 9.2,
+   "healthcare_score": 1.0,
+   "transit_score": 33.6,
+   "schools_score": 23.0,
+   "parks_score": 80.5,
+   "bbox": [
+    -119.72474,
+    39.1652,
+    -119.70759,
+    39.17956
+   ]
+  },
+  {
+   "geoid": "325100007023",
+   "label": "Tract 7.02, BG 3 (Carson City)",
+   "pop_total": 695,
+   "access_score": 22.9,
+   "grocery_score": 0.0,
+   "healthcare_score": 0.0,
+   "transit_score": 27.2,
+   "schools_score": 47.5,
+   "parks_score": 53.2,
+   "bbox": [
+    -119.7551,
+    39.13376,
+    -119.74602,
+    39.14046
+   ]
+  },
+  {
+   "geoid": "325100005011",
+   "label": "Tract 5.01, BG 1 (Carson City)",
+   "pop_total": 673,
+   "access_score": 44.7,
+   "grocery_score": 40.2,
+   "healthcare_score": 48.6,
+   "transit_score": 82.4,
+   "schools_score": 3.1,
+   "parks_score": 52.0,
+   "bbox": [
+    -119.77306,
+    39.1809,
+    -119.76575,
+    39.19072
+   ]
+  },
+  {
+   "geoid": "325100007022",
+   "label": "Tract 7.02, BG 2 (Carson City)",
+   "pop_total": 1362,
+   "access_score": 40.7,
+   "grocery_score": 25.7,
+   "healthcare_score": 3.1,
+   "transit_score": 75.8,
+   "schools_score": 32.7,
+   "parks_score": 79.6,
+   "bbox": [
+    -119.76354,
+    39.13381,
+    -119.75182,
+    39.14188
+   ]
+  },
+  {
+   "geoid": "325100005023",
+   "label": "Tract 5.02, BG 3 (Carson City)",
+   "pop_total": 1755,
+   "access_score": 59.2,
+   "grocery_score": 55.2,
+   "healthcare_score": 39.1,
+   "transit_score": 83.0,
+   "schools_score": 43.6,
+   "parks_score": 81.8,
+   "bbox": [
+    -119.755,
+    39.17242,
+    -119.73795,
+    39.1815
+   ]
+  },
+  {
+   "geoid": "325100007011",
+   "label": "Tract 7.01, BG 1 (Carson City)",
+   "pop_total": 1042,
+   "access_score": 34.5,
+   "grocery_score": 21.7,
+   "healthcare_score": 15.4,
+   "transit_score": 39.9,
+   "schools_score": 52.0,
+   "parks_score": 51.0,
+   "bbox": [
+    -119.7588,
+    39.14002,
+    -119.75188,
+    39.15015
+   ]
+  },
+  {
+   "geoid": "325100008003",
+   "label": "Tract 8, BG 3 (Carson City)",
+   "pop_total": 3054,
+   "access_score": 6.5,
+   "grocery_score": 0.0,
+   "healthcare_score": 0.0,
+   "transit_score": 1.1,
+   "schools_score": 10.3,
+   "parks_score": 28.4,
+   "bbox": [
+    -119.75216,
+    39.08649,
+    -119.70263,
+    39.16094
+   ]
+  },
+  {
+   "geoid": "325100010011",
+   "label": "Tract 10.01, BG 1 (Carson City)",
+   "pop_total": 1031,
+   "access_score": 56.3,
+   "grocery_score": 29.7,
+   "healthcare_score": 28.1,
+   "transit_score": 92.2,
+   "schools_score": 65.8,
+   "parks_score": 77.6,
+   "bbox": [
+    -119.73425,
+    39.16698,
+    -119.72404,
+    39.17176
+   ]
+  },
+  {
+   "geoid": "325100003003",
+   "label": "Tract 3, BG 3 (Carson City)",
+   "pop_total": 1817,
+   "access_score": 21.6,
+   "grocery_score": 7.5,
+   "healthcare_score": 6.1,
+   "transit_score": 49.9,
+   "schools_score": 7.9,
+   "parks_score": 46.0,
+   "bbox": [
+    -119.80232,
+    39.16262,
+    -119.77306,
+    39.20729
+   ]
+  },
+  {
+   "geoid": "325100007013",
+   "label": "Tract 7.01, BG 3 (Carson City)",
+   "pop_total": 1661,
+   "access_score": 49.4,
+   "grocery_score": 47.8,
+   "healthcare_score": 40.7,
+   "transit_score": 84.9,
+   "schools_score": 21.6,
+   "parks_score": 53.5,
+   "bbox": [
+    -119.76829,
+    39.14135,
+    -119.75697,
+    39.14994
+   ]
+  }
+ ],
+ "created_utc": "2026-10-31T02:23:12+00:00"
+}

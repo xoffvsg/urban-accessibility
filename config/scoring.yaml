@@ -58,3 +58,27 @@ residential:
   unclassified_max_area_m2: 1500  # ... unless a non-residential place lies inside
   floor_height_m: 3.5             # floors = num_floors, else round(height / 3.5), min 1
   fallback_grid_m: 50             # point grid for a populated block group with no homes
+
+# Equity analysis (src/urban_access/equity.py, notebook 06)
+equity:
+  poverty_ratio: 2.0              # "low income" = income below 2.0 x poverty line (ACS C17002 bin edge)
+  mc_draws: 1000                  # Monte Carlo draws from ACS margins of error (SE = MOE / 1.645)
+  seed: 20261030                  # fixed seed: reruns give identical ranges
+  lisa_permutations: 9999         # local Moran's I permutations
+  lisa_alpha: 0.05                # cluster significance level
+
+# Web map (src/urban_access/export.py → docs/data/<slug>_summary.json → docs/app.js)
+web:
+  # fixed absolute classes on access_score (same for every city); last class 60–100
+  class_breaks: [0, 10, 20, 30, 40, 50, 60, 100]
+  class_colors: ["#440154", "#443983", "#31688e", "#21918c", "#35b779", "#90d743", "#fde725"]  # viridis 7
+  no_residents_color: "#d9d9d9"
+  service_colors:                 # Okabe–Ito (colour-blind-safe categorical)
+    grocery: "#E69F00"
+    healthcare: "#D55E00"
+    schools: "#CC79A7"
+    transit: "#0072B2"
+    parks: "#009E73"
+    convenience: "#F0E442"
+  cv_flag_pct: 30                 # ACS estimates with CV above this get an uncertainty badge
+  basemap_style: "https://tiles.openfreemap.org/styles/positron"

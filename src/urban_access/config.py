@@ -127,6 +127,8 @@ class Scoring:
     dedupe_distance_m: float
     network: dict[str, float] = field(default_factory=dict)
     residential: dict[str, float] = field(default_factory=dict)
+    equity: dict[str, float] = field(default_factory=lambda: dict(EQUITY_DEFAULTS))
+    web: dict[str, Any] = field(default_factory=dict)  # passed through to the web summary
     place_overrides: dict[str, PlaceOverride] = field(default_factory=dict)
 
     @property
@@ -156,6 +158,13 @@ RESIDENTIAL_DEFAULTS = {
     "floor_height_m": 3.5,
     "fallback_grid_m": 50.0,
 }
+EQUITY_DEFAULTS = {
+    "mc_draws": 1000.0,
+    "seed": 20261030.0,
+    "lisa_permutations": 9999.0,
+    "lisa_alpha": 0.05,
+    "poverty_ratio": 2.0,
+}
 
 
 @dataclass(frozen=True)
@@ -174,6 +183,7 @@ class CityConfig:
     scoring: Scoring
     blocked_segments: dict[str, str] = field(default_factory=dict)  # segment id → note
     gated_areas_path: Path | None = None  # GeoJSON polygons with name / exits / note
+    gates_path: Path | None = None  # GeoJSON lines drawn across gates: status open|closed, note
 
     @property
     def raw_dir(self) -> Path:
@@ -238,6 +248,20 @@ def _tuple(v: Any) -> tuple[str, ...]:
     if isinstance(v, str):
         return (v,)
     return tuple(str(x) for x in v)
+
+
+def _parse_web(raw: dict[str, Any], services: list[str]) -> dict[str, Any]:
+    """Validate the `web:` block: ascending breaks with one colour per class."""
+    if not raw:
+        return {}
+    breaks = [float(b) for b in raw.get("class_breaks", [])]
+    colors = list(raw.get("class_colors", []))
+    if breaks != sorted(breaks) or len(colors) != len(breaks) - 1:
+        raise ConfigError("web: class_breaks must ascend and have one more entry than class_colors")
+    missing = set(services) - set(raw.get("service_colors", {}))
+    if missing:
+        raise ConfigError(f"web: service_colors missing {sorted(missing)}")
+    return dict(raw) | {"class_breaks": breaks}
 
 
 def parse_place_overrides(raw: dict[str, Any] | None) -> dict[str, PlaceOverride]:
@@ -322,6 +346,11 @@ def parse_scoring(
             **RESIDENTIAL_DEFAULTS,
             **{k: float(v) for k, v in (raw.get("residential") or {}).items()},
         },
+        web=_parse_web(raw.get("web") or {}, list(weights)),
+        equity={
+            **EQUITY_DEFAULTS,
+            **{k: float(v) for k, v in (raw.get("equity") or {}).items()},
+        },
         place_overrides=parse_place_overrides(place_overrides),
     )
 
@@ -367,6 +396,7 @@ def parse_city(raw: dict[str, Any], scoring_raw: dict[str, Any]) -> CityConfig:
         gated_areas_path=(
             CONFIG_DIR / "cities" / str(raw["gated_areas"]) if raw.get("gated_areas") else None
         ),
+        gates_path=CONFIG_DIR / "cities" / str(raw["gates"]) if raw.get("gates") else None,
     )
 
 

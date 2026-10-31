@@ -62,3 +62,9 @@ blocked_segments:
 # edge crossing a boundary is removed except edges of the streets in the feature's `exits` list;
 # homes and services inside snap only to edges inside, and outside ones only to edges outside.
 gated_areas: carson_city_gated_areas.geojson
+
+# Gates checked in the field (GeoJSON lines drawn across each gate, WGS84; edit in QGIS).
+# status closed: walk edges the line crosses are removed. status open: the line becomes a walk
+# link between the nearest edges at its two ends, and it is an exit through any gated-area boundary.
+# OSM gates tagged access=no / foot=no are closed automatically (osm step); others are reference only.
+gates: carson_city_gates.geojson

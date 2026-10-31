@@ -18,6 +18,7 @@ def build(cfg: CityConfig) -> pd.Series:
     print("[network] building walk network …", flush=True)
     write_blocked_segments(cfg)
     write_gated_areas(cfg)
+    write_gates(cfg)
     db.run_sql("20_network.sql", cfg)
     return stats(cfg)
 
@@ -67,6 +68,31 @@ def write_gated_areas(cfg: CityConfig) -> None:
                     f'INSERT INTO "{cfg.slug}".gated_areas (name, exits, note, geom) '
                     f"VALUES (:name, :exits, :note, "
                     f"ST_Multi(ST_GeomFromText(:wkt, {cfg.analysis_epsg})))"
+                ),
+                row,
+            )
+
+
+def write_gates(cfg: CityConfig) -> None:
+    """City `gates:` GeoJSON (lines across gates, status open|closed) → <slug>.gates."""
+    q = f"""
+        DROP TABLE IF EXISTS "{cfg.slug}".gates;
+        CREATE TABLE "{cfg.slug}".gates (
+            id serial PRIMARY KEY, status text NOT NULL CHECK (status IN ('open', 'closed')),
+            note text, geom geometry(LineString, {cfg.analysis_epsg}) NOT NULL);
+    """
+    rows = []
+    if cfg.gates_path is not None:
+        gdf = gpd.read_file(cfg.gates_path).to_crs(cfg.analysis_epsg)
+        for r in gdf.itertuples():
+            rows.append({"status": r.status, "note": r.note, "wkt": r.geometry.wkt})
+    with db.engine().begin() as con:
+        con.execute(text(q))
+        for row in rows:
+            con.execute(
+                text(
+                    f'INSERT INTO "{cfg.slug}".gates (status, note, geom) '
+                    f"VALUES (:status, :note, ST_GeomFromText(:wkt, {cfg.analysis_epsg}))"
                 ),
                 row,
             )

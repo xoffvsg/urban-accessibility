@@ -2,9 +2,9 @@
 CITY ?= carson_city
 PY   := python -m urban_access.cli
 
-.PHONY: all phase1 census extract gtfs phase2 load network score test lint serve
+.PHONY: all phase1 census extract gtfs osm phase2 load network score equity export test lint serve
 
-all: phase1 phase2
+all: phase1 phase2 equity export
 
 phase1:
 	$(PY) phase1 --city $(CITY)
@@ -18,6 +18,9 @@ extract: census
 gtfs:
 	$(PY) gtfs --city $(CITY)
 
+osm:
+	$(PY) osm --city $(CITY)
+
 phase2:
 	$(PY) phase2 --city $(CITY)
 
@@ -29,6 +32,12 @@ network:
 
 score:
 	$(PY) score --city $(CITY)
+
+equity:
+	$(PY) equity --city $(CITY)
+
+export:
+	$(PY) export --city $(CITY)
 
 test:
 	pytest -q

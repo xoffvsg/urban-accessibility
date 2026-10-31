@@ -26,6 +26,11 @@ TABLES: dict[str, tuple[str, str | None]] = {
     "parks": ("parks.parquet", "PROMOTE_TO_MULTI"),
     "neighborhoods": ("neighborhoods.parquet", "PROMOTE_TO_MULTI"),
 }
+# loaded when present (sql/20_network.sql creates empty stand-ins otherwise)
+OPTIONAL_TABLES: dict[str, tuple[str, str | None]] = {
+    "osm_gates": ("osm_gates.parquet", "POINT"),
+    "osm_fences": ("osm_fences.parquet", "LINESTRING"),
+}
 
 
 def engine() -> Engine:
@@ -173,5 +178,11 @@ def load_all(cfg: CityConfig) -> dict[str, float]:
         print(f"[load] {table} …", flush=True)
         load_parquet(cfg.raw_dir / fname, table, cfg, nlt)
         timings[table] = time.time() - t0
+    for table, (fname, nlt) in OPTIONAL_TABLES.items():
+        if (cfg.raw_dir / fname).exists():
+            t0 = time.time()
+            print(f"[load] {table} …", flush=True)
+            load_parquet(cfg.raw_dir / fname, table, cfg, nlt)
+            timings[table] = time.time() - t0
     run_sql("10_prepare.sql", cfg)
     return timings

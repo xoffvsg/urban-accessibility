@@ -181,6 +181,7 @@ Path pattern: `s3://overturemaps-us-west-2/release/<release>/theme=<theme>/type=
 | `block_groups.parquet` | TIGER/Line via `pygris` | Same vintage as ACS. |
 | `acs.parquet` | Census API, ACS 5-yr, block group | See variable list below. |
 | `gtfs_stops.parquet` | GTFS `stops.txt` | Only if `transit.gtfs_url` set. |
+| `osm_gates.parquet`, `osm_fences.parquet` | OSM via Overpass (`osm.py`, `make osm`) | Overture has no barriers. Gate points (`closed` = access=no / foot=no, not overridden by foot=yes) and fence/wall lines; live data, timestamp in `.meta.json`; ODbL. |
 
 **Important — Overture schema change:** the `categories` column was removed from places in the
 September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.hierarchy` / `taxonomy.alternates`
@@ -208,6 +209,10 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
    barriers) are dropped too (`walk_segments.blocked_note`). Gated areas (`gated_areas:` → GeoJSON in
    `config/cities/`, editable in QGIS): edges crossing the boundary are removed except the listed exit
    streets, inside edges get `edges.gated`, and origins/destinations snap only to edges on their own side.
+   Gates (`gates:` → GeoJSON lines across each gate): `closed` removes the edges a line crosses;
+   `open` splits the nearest remaining edge at each end and adds the line as an edge (`class = gate`),
+   after the gated-area cut, so it is an exit. OSM gates with `closed` remove the edge they lie on
+   (not at a junction). Untagged OSM gates are reference only (the user fixes cases as found).
    Topology: split each segment at its connectors (`ST_LineSubstring` between consecutive `at`) →
    `edges(id, source, target, cost_m, …)`, undirected, connector UUIDs → bigint `vertices`. Only the
    **largest connected component** (`edges.main`, 98.8 % of length here) is used. Roads without a
@@ -246,21 +251,34 @@ Default weights (in `scoring.yaml`): grocery 0.25, healthcare 0.20, transit 0.20
 ### Phase 2b — Equity analysis (`06_equity_analysis`)
 
 Headline numbers: residents (and %) with/without a 5-minute walk to a grocery store; same for each
-service. Break down by income tercile, zero-car-household share, 65+ share. Correlate
-`access_score` with those fields; local spatial autocorrelation (LISA, `esda`) to show clusters of
-low access. Every finding quoted in the README must come from a notebook cell.
+service. Every finding quoted in the README must come from a notebook cell. Method (decided
+2026-10-30, `src/urban_access/equity.py`, `make equity`):
+- Groups are **count-weighted**, not terciles of a share: each block group's resident band shares
+  weighted by its count of zero-car households (B25044), residents 65+ (B01001) or residents below
+  `equity.poverty_ratio` × poverty line (C17002, default 2.0). Ecological caveat: members assumed spread
+  over the block group's homes like all residents.
+- Income: also thirds of residents by block-group median income (`weighted_terciles`).
+- MOE: Monte Carlo (`equity.mc_draws`, fixed `seed`), counts and income ~ Normal(est, MOE/1.645),
+  clipped ≥ 0, independent. Report point + p05–p95; the draws attenuate correlations and mix
+  terciles, so ranges are robustness checks and the point can sit at their edge.
+- Spearman ρ across populated block groups; Queen contiguity LISA (`esda`, 9,999 permutations), also
+  FDR-adjusted. Outputs: `data/processed/<slug>/equity_summary.json`, `equity_groups.csv`,
+  `block_groups_equity.parquet` and `<slug>.bg_equity` (`lisa_cluster`, `income_tercile`) for Phase 3.
 
 ### Phase 3 — Visualization (`docs/`)
 
 - Export block groups (EPSG:4326, rounded coords, only popup fields) and service points to
-  GeoJSON → `tippecanoe` → `docs/data/<slug>.pmtiles` (two layers: `block_groups`, `services`).
+  GeoJSON → `tippecanoe` → `docs/data/<slug>.pmtiles` (layers `block_groups`, `services`, `parks`;
+  `src/urban_access/export.py`, `make export`). Park entrance points (`landuse_access`) are not exported.
 - `docs/data/<slug>_summary.json`: per-block-group scores for the chart + metadata (release, vintage, weights).
 - `index.html`: MapLibre choropleth on `access_score` (sequential, colour-blind-safe ramp, fixed
   0–100 classes), popup with name, score, per-service breakdown, population, key ACS fields.
 - Service filter: checkboxes/sliders re-weight services **client-side** from the per-service
   properties (set paint expression / feature-state); map, legend and chart update together.
 - Sorted bar chart of block groups by score, linked to the map (hover/click highlights).
-- Toggleable service-point layer by type. Basemap: free, no API key (TBD-PLAN: OpenFreeMap vs Protomaps).
+- Toggleable service-point layer by type; optional LISA cluster outlines (default weights). Basemap:
+  OpenFreeMap positron. Libraries pinned on unpkg: `maplibre-gl@4.7.1`, `pmtiles@3.2.1`. `?city=<slug>`
+  selects the data files. No build step: `docs/index.html`, `app.js`, `style.css`.
 - Attribution for Overture (ODbL/CDLA per theme), OSM-derived data, Census, basemap.
 - Must work locally with `cd docs && python -m RangeHTTPServer 8000` (http://localhost:8000) and on
   GitHub Pages. PMTiles needs HTTP Range requests: **never** use `python -m http.server` for preview — it
@@ -320,7 +338,12 @@ Resolved in Phase 2 planning (2026-10-30):
 3. ~~Residential heuristic~~ → residential classes incl. mobile homes + unclassified 40–1,500 m²
    without a non-residential place; weight area × floors (§6 Phase 2 step 5).
 
+Resolved in Phase 3 planning (2026-10-30):
+
+6. ~~Basemap; colour ramp and classes~~ → OpenFreeMap `positron` (no key); 7 fixed absolute classes
+   0–10 … 50–60, 60–100, viridis; all in `config/scoring.yaml` `web:` (passed to the page via the
+   summary JSON).
+
 Still open:
 
-6. Basemap provider; colour ramp and class breaks.
 8. Optional: H3 summary layer or a second city to prove the config is portable.

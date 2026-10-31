@@ -68,6 +68,17 @@ WHERE ST_Length(e.geom) > 0;
 ALTER TABLE edges ADD PRIMARY KEY (id);
 DROP TABLE edges_raw;
 
+-- closed gates: lines drawn across a gate (city config `gates:`, status closed) remove the
+-- edges they cross; OSM gates explicitly closed to walkers (osm_gates.closed: access=no / foot=no)
+-- remove the edge they lie on (within 1.5 m), unless they sit at an edge end (a junction: ambiguous)
+CREATE TABLE IF NOT EXISTS osm_gates (osm_id text, closed boolean, geom geometry(Point, :epsg));
+DELETE FROM edges e USING gates g
+WHERE g.status = 'closed' AND ST_Intersects(e.geom, g.geom);
+DELETE FROM edges e USING osm_gates b
+WHERE b.closed AND ST_DWithin(e.geom, b.geom, 1.5)
+  AND ST_Distance(ST_StartPoint(e.geom), b.geom) > 1.5
+  AND ST_Distance(ST_EndPoint(e.geom), b.geom) > 1.5;
+
 -- gated areas (city config): drop edges crossing a boundary unless the street is a listed exit;
 -- tag edges inside so origins/destinations snap on their own side of the fence
 DELETE FROM edges e
@@ -75,6 +86,38 @@ USING gated_areas g, walk_segments w
 WHERE w.segment_id = e.segment_id
   AND ST_Intersects(e.geom, ST_Boundary(g.geom))
   AND NOT coalesce(w.name = ANY (string_to_array(g.exits, ';')), false);
+
+-- open gates: each end of the drawn line becomes a vertex splitting its nearest remaining edge
+-- (two partial edges, like destinations; the original edge stays), and the line itself becomes
+-- an edge between them (cost = line length + both snaps). Added after the gated-area cut, so a
+-- gate is an exit wherever it is drawn.
+CREATE TEMP TABLE gate_ends AS
+SELECT g.id AS gate_id, x.end_no, n.id AS edge_id, n.source, n.target, n.cost_m, n.geom AS egeom,
+       ST_LineLocatePoint(n.geom, x.pt) AS frac, ST_Distance(n.geom, x.pt) AS snap_m,
+       (SELECT max(id) FROM vertices) + 2 * g.id - 2 + x.end_no AS vid
+FROM gates g
+CROSS JOIN LATERAL (VALUES (1, ST_StartPoint(g.geom)), (2, ST_EndPoint(g.geom))) x(end_no, pt)
+CROSS JOIN LATERAL (SELECT e.* FROM edges e ORDER BY e.geom <-> x.pt LIMIT 1) n
+WHERE g.status = 'open';
+INSERT INTO vertices (id, connector_id)  -- geom: filled from edge ends below
+SELECT vid, format('gate:%s:%s', gate_id, end_no) FROM gate_ends;
+INSERT INTO edges (id, source, target, cost_m, segment_id, class, subclass, geom)
+SELECT (SELECT max(id) FROM edges) + row_number() OVER (ORDER BY gate_id, end_no, part),
+       src, tgt, cost, format('gate:%s', gate_id), 'gate', 'split', geom
+FROM (
+    SELECT gate_id, end_no, 1 AS part, source AS src, vid AS tgt, frac * cost_m AS cost,
+           ST_LineSubstring(egeom, 0, frac) AS geom FROM gate_ends WHERE frac > 0
+    UNION ALL
+    SELECT gate_id, end_no, 2, vid, target, (1 - frac) * cost_m,
+           ST_LineSubstring(egeom, frac, 1) FROM gate_ends WHERE frac < 1
+) parts;
+INSERT INTO edges (id, source, target, cost_m, segment_id, class, subclass, geom)
+SELECT (SELECT max(id) FROM edges) + row_number() OVER (ORDER BY g.id), a.vid, b.vid,
+       ST_Length(g.geom) + a.snap_m + b.snap_m, format('gate:%s', g.id), 'gate', 'link', g.geom
+FROM gates g
+JOIN gate_ends a ON a.gate_id = g.id AND a.end_no = 1
+JOIN gate_ends b ON b.gate_id = g.id AND b.end_no = 2;
+
 ALTER TABLE edges ADD COLUMN gated text;
 UPDATE edges e SET gated = g.name
 FROM gated_areas g WHERE ST_Intersects(g.geom, ST_LineInterpolatePoint(e.geom, 0.5));

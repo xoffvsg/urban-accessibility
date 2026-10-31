@@ -1,7 +1,8 @@
 -- Independent distance check (run via network.check_pairs, SQLAlchemy params :n).
 -- For n random building origins and services: insert the origin as its own virtual node
 -- (two edges to its edge's ends), run point-to-many pgr_dijkstraCost to every destination of
--- the service, take the minimum, and compare with origin_dist.dist_m.
+-- the service (plus a direct link to destinations on the same edge), take the minimum, and
+-- compare with origin_dist.dist_m.
 WITH pick AS (
     SELECT od.origin_id, od.service, od.dist_m
     FROM __SCHEMA__.origin_dist od JOIN __SCHEMA__.origins o ON o.id = od.origin_id
@@ -23,6 +24,11 @@ CROSS JOIN LATERAL (
             UNION ALL
             SELECT -2, -1, e.target, o.snap_m + (1 - o.frac) * e.cost_m
             FROM __SCHEMA__.origins o JOIN __SCHEMA__.edges e ON e.id = o.edge_id WHERE o.id = %2$s
+            UNION ALL  -- destination on the origin's own edge: walk along it directly
+            SELECT -10 - d.id, -1, d.node, o.snap_m + d.snap_m + abs(d.frac - o.frac) * e.cost_m
+            FROM __SCHEMA__.origins o JOIN __SCHEMA__.edges e ON e.id = o.edge_id
+            JOIN __SCHEMA__.dests d ON d.edge_id = o.edge_id AND d.service = %1$L
+            WHERE o.id = %2$s
         $q$, p.service, p.origin_id),
         -1::bigint,
         (SELECT array_agg(node) FROM __SCHEMA__.dests WHERE service = p.service),

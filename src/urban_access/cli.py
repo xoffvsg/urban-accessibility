@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import census, db, extract, gtfs, network, scoring
+from . import census, db, equity, export, extract, gtfs, network, osm, scoring
 from .config import CityConfig, default_city, load_city
 
 
@@ -23,11 +23,19 @@ def step_gtfs(cfg: CityConfig, args: argparse.Namespace) -> None:
     gtfs.run(cfg, force=args.force)
 
 
+def step_osm(cfg: CityConfig, args: argparse.Namespace) -> None:
+    if not (cfg.raw_dir / "block_groups.parquet").exists():
+        census.run(cfg)
+    extent = census.scored_extent(cfg).buffered(cfg.edge_buffer_m, cfg.analysis_epsg)
+    osm.run(cfg, extent, force=args.force)
+
+
 def step_phase1(cfg: CityConfig, args: argparse.Namespace) -> None:
     args.only = None
     step_census(cfg, args)
     step_extract(cfg, args)
     step_gtfs(cfg, args)
+    step_osm(cfg, args)
 
 
 def step_load(cfg: CityConfig, args: argparse.Namespace) -> None:
@@ -51,15 +59,30 @@ def step_phase2(cfg: CityConfig, args: argparse.Namespace) -> None:
     step_score(cfg, args)
 
 
+def step_equity(cfg: CityConfig, args: argparse.Namespace) -> None:
+    r = equity.run(cfg)
+    g = r["groups"]
+    near = f"_le_{cfg.scoring.near_m:g}m"
+    sel = g[(g["kind"] == "pct") & g["metric"].str.endswith(near)]
+    print(sel.pivot(index="metric", columns="group", values="point").round(1).to_string())
+
+
+def step_export(cfg: CityConfig, args: argparse.Namespace) -> None:
+    export.run(cfg)
+
+
 STEPS = {
     "census": step_census,
     "extract": step_extract,
     "gtfs": step_gtfs,
+    "osm": step_osm,
     "phase1": step_phase1,
     "load": step_load,
     "network": step_network,
     "score": step_score,
     "phase2": step_phase2,
+    "equity": step_equity,
+    "export": step_export,
 }
 
 

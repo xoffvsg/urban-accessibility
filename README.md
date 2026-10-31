@@ -27,7 +27,8 @@ the bbox), buffered 2 km so services just outside still count.
 | Overture road segments / connectors | 16,650 / 24,430 | Overture `transportation` | ODbL |
 | Overture park land use | 98 polygons | Overture `base/land_use` (park, dog park, playground, recreation ground) | ODbL |
 | Census block groups | 80 (46 scored: 40 Carson City, 6 Douglas County) | TIGER/Line 2024 via [pygris](https://github.com/walkerke/pygris) | Public domain |
-| ACS 5-year 2020–2024 | 80 block groups | [Census API](https://www.census.gov/data/developers/data-sets/acs-5year.html): population, age, income, vehicles, with MOEs | Public domain |
+| ACS 5-year 2020–2024 | 80 block groups | [Census API](https://www.census.gov/data/developers/data-sets/acs-5year.html): population, age (B01001), income (B19013), vehicles (B25044), income-to-poverty ratio (C17002), with MOEs | Public domain |
+| OSM gates and fences | 300 gates / 302 fence lines | [Overpass API](https://overpass-api.de), fetched 2026-10-30 (`barrier=*`) | ODbL, © OpenStreetMap contributors |
 | JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
 
 Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
@@ -37,9 +38,10 @@ for groceries, one Walmart is now a Ross store, three listed stores don't exist,
 to its store, which leaves 12 full-service grocery stores.
 Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
 
-ACS caveat: at block-group level the share of households without a car has a coefficient of variation
-above 30 % in 34 of 46 scored block groups, and median income in 11. These fields are shown with their
-margins of error.
+ACS caveat: at block-group level the coefficient of variation is above 30 % in 34 of the 45 populated
+scored block groups for the share of households without a car, in 27 for the share below 200 % of the
+poverty line, and in 11 for median income. These fields are shown with their margins of error, and the
+equity results carry Monte Carlo ranges (see Findings).
 
 Analysis CRS: **EPSG:32611** (WGS 84 / UTM 11N, metres). Web layers are exported in EPSG:4326.
 
@@ -78,8 +80,11 @@ not rescaled, so other cities are comparable; a city-relative percentile is stor
 neighbourhood differences. The cost is large ACS margins of error (see The data).
 
 **Limitations.** Roads without a mapped sidewalk are treated as walkable. Access rules that apply to
-part of a segment are applied to the whole segment. Overture has no barriers (fences, gates); paths
-found blocked on the ground are removed by segment id (`blocked_segments` in the city config). Gated
+part of a segment are applied to the whole segment. Overture has no barriers (fences, gates). OSM gates
+explicitly closed to walkers (`access=no` / `foot=no`, 7 here) are applied automatically; the other
+OSM gates (most have no access tag) are not modelled. Gates checked on the ground are drawn as
+lines in `carson_city_gates.geojson` (open or closed), and blocked paths are listed by segment id
+(`blocked_segments`). Gated
 communities are drawn as polygons whose only connections are their real gates (`gated_areas`); so far two
 adjoining ones off Fairview Dr and S Saliman Rd (136 and 108 homes), each with a single exit. Overture place categories need city-specific
 corrections (see `config/cities/carson_city.yaml`). Healthcare still includes some specialist clinics
@@ -89,7 +94,38 @@ that Overture tags as general clinics.
 
 ## Findings
 
-<!-- TODO (Phase 2b–4): headline finding, 3–5 numbers, top/bottom table. -->
+<!-- Draft from notebooks/06_equity_analysis.ipynb (numbers regenerate with `make equity`).
+     TODO (Phase 4): headline sentence for the intro, top/bottom table, screenshot. -->
+
+All numbers are for the 62,051 residents of the 45 populated scored block groups. Ranges in brackets
+are the 5th–95th percentiles of 1,000 Monte Carlo draws from the ACS margins of error.
+
+**A 5-minute walk to a grocery store is rare.** 1,290 residents (2.1 % [1.9–2.3]) live within 400 m
+of one of the 12 full-service grocery stores, measured along the walking network; 41.1 % have none
+within 1,600 m (about 20 minutes). Another 3,690 (5.9 %) have a convenience store but no grocery
+within 400 m. Transit is the most walkable service (32.7 % within 400 m of a JAC stop), then parks
+(23.0 %); healthcare (2.2 %) and K-8 schools (3.3 %) are as rare as groceries.
+
+**Access is better where incomes are lower.** The lowest-income third of residents (block-group median
+household income $34k–61k) has a mean access score of 47.5; the highest-income third ($82k–143k) has
+23.3. Across block groups, Spearman ρ between the access score and median household income is −0.59
+(MC range −0.60 to −0.30), and +0.45 with the share of residents below 200 % of the poverty line.
+Residents below that line are more likely than average to be within 400 m of a transit stop (46.4 %
+[42.7–50.0] vs 32.7 %) and of a grocery store (3.1 % vs 2.1 %); so are households without a car
+(43.5 % and 3.8 %).
+
+**Older residents have less access.** 1.6 % [1.3–1.8] of residents 65+ live within 400 m of a
+grocery store, and their mean access score is 31.1 against 34.2 for all residents (ρ with the 65+
+share: −0.34).
+
+**Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.64,
+p = 0.0001, 9,999 permutations). Local Moran's I finds 8 low-low block groups at p < 0.05 (6 after a
+false-discovery-rate correction), all between 39.03 °N and 39.12 °N: the Douglas County block groups
+and two at the south end of Carson City. The 6 high-high block groups (3 after correction) lie further
+north, at 39.17–39.18 °N.
+
+These are block-group comparisons (ecological inference): a group is assumed to live in its block
+group's homes like everyone else.
 
 ---
 
@@ -153,6 +189,7 @@ would be OSMnx/NetworkX on an OpenStreetMap walk network.
 | Install the **Claude Code CLI inside Ubuntu** (`curl -fsSL https://claude.ai/install.sh \| bash`) and add `~/.local/bin` to the PATH | A Windows install isn't visible from WSL, and the VS Code extension doesn't provide the `claude` terminal command. Reloading `~/.bashrc` afterwards drops back to `(base)`, so `conda activate urban-access` is needed again before starting `claude` |
 | Know the **Ubuntu user password** for `sudo` | Needed for `apt-get` (e.g. the `psql` client) |
 | Fix `docker ps` → *permission denied* on `docker.sock` | Docker Desktop's WSL integration plus membership of the `docker` group. Not needed for the project itself, which connects through port 5436 |
+| `playwright install chromium`, then `sudo apt-get install libnss3 libnspr4 libasound2t64` | Headless Chromium for testing the web map and the README screenshot; the browser download lives in `~/.cache/ms-playwright`, and Ubuntu lacked three system libraries it needs (on Windows the browser brings its own) |
 | Dismiss the *"workspace is on the Windows file system"* warning | The repo is on `C:` on purpose; file access from WSL is slower there |
 
 Issues that came up during setup but **were not caused by WSL** (they'd happen on Windows too):
@@ -189,10 +226,10 @@ failed until the `libgdal-arrow-parquet` and `libgdal-pg` plugins were added to 
 Requires: Windows with WSL2 Ubuntu (or any Linux/macOS), conda (Miniforge), and a PostgreSQL server with
 PostGIS and pgRouting (Docker `kartoza/postgis` used here). See [SETUP.md](SETUP.md).
 
-To view the map locally after the pipeline has run:
-
 ```bash
-cd docs && python -m RangeHTTPServer 8000    # open http://localhost:8000
+conda env create -f environment.yml && conda activate urban-access   # once; then fill .env
+make all CITY=carson_city      # extract → network + scores → equity → docs/data/*.pmtiles
+make serve                     # http://localhost:8000
 ```
 
 RangeHTTPServer is used instead of `python -m http.server` because PMTiles reads byte ranges of the

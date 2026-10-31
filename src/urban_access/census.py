@@ -21,6 +21,8 @@ MAX_VARS_PER_CALL = 45  # API limit is 50 incl. geography fields
 # B01001 sex-by-age line numbers
 _UNDER18 = [3, 4, 5, 6, 27, 28, 29, 30]
 _AGE65 = [20, 21, 22, 23, 24, 25, 44, 45, 46, 47, 48, 49]
+# C17002 ratio of income to poverty level: line number → upper bound of the bin (line 8 = 2.00+)
+_POVERTY_BINS = {2: 0.50, 3: 1.00, 4: 1.25, 5: 1.50, 6: 1.85, 7: 2.00}
 
 ACS_VARS: dict[str, str] = {
     "B01003_001": "pop_total",
@@ -29,6 +31,8 @@ ACS_VARS: dict[str, str] = {
     "B25044_003": "hh_owner_no_vehicle",
     "B25044_010": "hh_renter_no_vehicle",
     **{f"B01001_{n:03d}": f"b01001_{n:03d}" for n in _UNDER18 + _AGE65},
+    "C17002_001": "pov_universe",
+    **{f"C17002_{n:03d}": f"c17002_{n:03d}" for n in _POVERTY_BINS},
 }
 
 # Census "annotation" sentinels (median not computable, top-coded, etc.)
@@ -130,7 +134,13 @@ def acs(cfg: CityConfig, counties: list[tuple[str, str]]) -> pd.DataFrame:
     out["pop_65plus_moe"] = _moe_sum(out[[c + "_moe" for c in old]])
     out["hh_no_vehicle"] = out[nocar].sum(axis=1, min_count=1)
     out["hh_no_vehicle_moe"] = _moe_sum(out[[c + "_moe" for c in nocar]])
-    out = out.drop(columns=[c for c in out.columns if c.startswith("b01001_")])
+    ratio = cfg.scoring.equity["poverty_ratio"]
+    pov = [f"c17002_{n:03d}" for n, upper in _POVERTY_BINS.items() if upper <= ratio + 1e-9]
+    if not np.isclose(max(_POVERTY_BINS[int(c[-3:])] for c in pov), ratio):
+        raise ValueError(f"poverty_ratio {ratio} is not a C17002 bin edge {_POVERTY_BINS.values()}")
+    out["pop_below_pov"] = out[pov].sum(axis=1, min_count=1)
+    out["pop_below_pov_moe"] = _moe_sum(out[[c + "_moe" for c in pov]])
+    out = out.drop(columns=[c for c in out.columns if c.startswith(("b01001_", "c17002_"))])
 
     out["pop_under18_pct"] = 100 * out["pop_under18"] / out["pop_total"].replace(0, np.nan)
     out["pop_65plus_pct"] = 100 * out["pop_65plus"] / out["pop_total"].replace(0, np.nan)
@@ -141,8 +151,14 @@ def acs(cfg: CityConfig, counties: list[tuple[str, str]]) -> pd.DataFrame:
     rad = num**2 - p**2 * den**2
     rad = rad.where(rad >= 0, num**2 + p**2 * den**2)
     out["zero_car_hh_pct_moe"] = 100 * np.sqrt(rad) / out["hh_total"].replace(0, np.nan)
+    p = out["pop_below_pov"] / out["pov_universe"].replace(0, np.nan)
+    num, den = out["pop_below_pov_moe"], out["pov_universe_moe"]
+    rad = num**2 - p**2 * den**2
+    rad = rad.where(rad >= 0, num**2 + p**2 * den**2)
+    out["below_pov_pct"] = 100 * p
+    out["below_pov_pct_moe"] = 100 * np.sqrt(rad) / out["pov_universe"].replace(0, np.nan)
     # coefficient of variation (%) for the headline estimates: > 30 % = unreliable
-    for c in ("pop_total", "median_hh_income", "zero_car_hh_pct"):
+    for c in ("pop_total", "median_hh_income", "zero_car_hh_pct", "below_pov_pct"):
         out[c + "_cv"] = 100 * (out[c + "_moe"] / 1.645) / out[c].replace(0, np.nan)
     out["acs_year"] = cfg.acs_year
     return out.reset_index()

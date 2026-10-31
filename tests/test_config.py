@@ -115,3 +115,11 @@ def test_gated_areas_path(city_raw, scoring_raw):
     raw = copy.deepcopy(city_raw)
     raw.pop("gated_areas")
     assert parse_city(raw, scoring_raw).gated_areas_path is None
+
+
+def test_gates_path(city_raw, scoring_raw):
+    cfg = parse_city(city_raw, scoring_raw)
+    assert cfg.gates_path is not None and cfg.gates_path.exists()
+    raw = copy.deepcopy(city_raw)
+    raw.pop("gates")
+    assert parse_city(raw, scoring_raw).gates_path is None

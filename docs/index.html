@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Walking access to essential services</title>
+<meta name="description" content="Walking access to grocery, healthcare, schools, transit and parks for every Census block group, measured along the real walking network.">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+</head>
+<body>
+<div id="app">
+  <aside id="panel">
+    <header>
+      <h1 id="title">Walking access to essential services</h1>
+      <p id="subtitle" class="muted"></p>
+      <p id="headline"></p>
+    </header>
+
+    <section>
+      <h2>Score</h2>
+      <p class="muted small">Per Census block group, 0–100: residents' walk along the street and path
+        network to the nearest service, scored ≤ 400 m (5 min) = 1, ≤ 800 m = 0.6, ≤ 1,600 m = 0.3,
+        else 0, averaged over homes and weighted by service.</p>
+      <div id="legend" aria-label="Legend"></div>
+    </section>
+
+    <section>
+      <h2>Weights <button id="reset" type="button" class="link">reset</button></h2>
+      <div id="weights"></div>
+    </section>
+
+    <section>
+      <h2>Layers</h2>
+      <div id="layers"></div>
+    </section>
+
+    <section>
+      <h2>Block groups by score</h2>
+      <p class="muted small">Hover or click a bar to find it on the map.</p>
+      <div id="chart"></div>
+    </section>
+
+    <footer>
+      <p class="small muted" id="sources"></p>
+    </footer>
+  </aside>
+  <main id="map" aria-label="Map"></main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
