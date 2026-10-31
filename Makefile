@@ -2,7 +2,7 @@
 CITY ?= carson_city
 PY   := python -m urban_access.cli
 
-.PHONY: all phase1 census extract gtfs osm phase2 load network score equity export test lint serve
+.PHONY: all phase1 census extract gtfs osm phase2 load network score equity export xcheck test lint serve
 
 all: phase1 phase2 equity export
 
@@ -38,6 +38,11 @@ equity:
 
 export:
 	$(PY) export --city $(CITY)
+
+# Review tables against open data (not part of `all`); SOURCE=schools
+SOURCE ?= schools
+xcheck:
+	$(PY) xcheck --city $(CITY) --source $(SOURCE)
 
 test:
 	pytest -q

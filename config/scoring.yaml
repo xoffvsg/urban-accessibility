@@ -67,6 +67,17 @@ equity:
   lisa_permutations: 9999         # local Moran's I permutations
   lisa_alpha: 0.05                # cluster significance level
 
+# Cross-checks with authoritative open data (src/urban_access/xcheck.py, `make xcheck`): review
+# tables only; decisions go into the city's include/exclude lists and place_overrides.
+xcheck:
+  confirm_m: 150                  # name match within this distance = confirmed; farther = moved
+  max_m: 500                      # no match beyond this distance
+  min_name_similarity: 0.6        # share of distinctive name words in common (see xcheck.name_similarity)
+  overture_taxonomy: [education]  # Overture candidates: places with this in taxonomy.hierarchy
+  schools:                        # NCES EDGE (public, CCD) + PSS (private); school years, newest first
+    public_year: "2425"
+    private_years: ["2324", "2122"]   # PSS is a survey: non-respondents are filled from the older year
+
 # Web map (src/urban_access/export.py → docs/data/<slug>_summary.json → docs/app.js)
 web:
   # fixed absolute classes on access_score (same for every city); last class 60–100

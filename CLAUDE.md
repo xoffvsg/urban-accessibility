@@ -132,6 +132,7 @@ Urban_Accessibility/        # C:\dev\PortfolioProject4\Urban_Accessibility (GitH
 │   ├── extract.py          # DuckDB → Overture S3 → GeoParquet
 │   ├── census.py           # TIGER block groups + ACS API
 │   ├── gtfs.py             # optional GTFS stops
+│   ├── nces.py / xcheck.py # NCES school lists; cross-checks vs open data → review CSVs
 │   ├── db.py               # SQLAlchemy/psycopg engine, run .sql files, ogr2ogr loader
 │   ├── network.py          # build pgRouting graph, run distance queries
 │   ├── scoring.py          # bands, per-service scores, composite
@@ -188,6 +189,7 @@ Path pattern: `s3://overturemaps-us-west-2/release/<release>/theme=<theme>/type=
 | `acs.parquet` | Census API, ACS 5-yr, block group | See variable list below. |
 | `gtfs_stops.parquet` | GTFS `stops.txt` | Only if `transit.gtfs_url` set. |
 | `osm_gates.parquet`, `osm_fences.parquet` | OSM via Overpass (`osm.py`, `make osm`) | Overture has no barriers. Gate points (`closed` = access=no / foot=no, not overridden by foot=yes) and fence/wall lines; live data, timestamp in `.meta.json`; ODbL. |
+| `nces_schools.parquet` | NCES EDGE REST (public: CCD locations + admin data, grade span, status) + PSS CSV (private; older year fills survey non-respondents) (`nces.py`, `make xcheck`) | Cross-check only, never a service source. `xcheck.py` pairs places by name + distance → `data/interim/<slug>/xcheck_schools.csv` (`suggestion` add/drop/review/missing); decisions go into `include_names` / `place_overrides`. Public domain. |
 
 **Important — Overture schema change:** the `categories` column was removed from places in the
 September 2026 release. Use `basic_category` and `taxonomy.primary` / `taxonomy.hierarchy` / `taxonomy.alternates`
@@ -333,7 +335,8 @@ Resolved in Phase 1 planning (2026-10-30):
    `doctors_office`, dental, eye, EMS).
 4. ~~JAC GTFS URL~~ → `https://JumpAroundCarson.transloc.com/Secure/Admin/Reports/GTFSDownload.aspx`
    (the carson.org document link is dead). Zip cached in `data/raw/<slug>/gtfs.zip`.
-5. ~~School levels~~ → **K-8 only** (elementary + middle; named K-8 private schools via city include list).
+5. ~~School levels~~ → **K-8 only**: open, not full-virtual, NCES grade span overlaps K-8 (combined
+   schools such as 1-12 count). Non-elementary/middle tags via the city include list; checked with `make xcheck`.
 7. ~~Makefile / driver~~ → **CLI-driven**: `python -m urban_access.cli <step> --city <slug>`; the
    Makefile calls the CLI; notebooks call the same `src/` functions and add checks and plots. No papermill.
 

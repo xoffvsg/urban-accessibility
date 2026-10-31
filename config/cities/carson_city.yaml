@@ -36,8 +36,10 @@ services:
     exclude_names: ["d\\.?d\\.?s", "dental", "marketers", "hometown health", "medical capital",
                     "behavioral health"]
   schools:
-    # K-8 private schools tagged school/private_school (verify grades before publishing)
-    include_names: ["^st\\.? teresa'?s school", "^bethlehem lutheran school"]
+    # Schools serving any of grades K-8 that Overture doesn't tag elementary/middle; grades from NCES
+    # (CCD 2024-25, PSS 2023-24 / 2021-22), see `make xcheck` → data/interim/<slug>/xcheck_schools.csv
+    include_names: ["^st\\.? teresa'?s school", "^bethlehem lutheran school", "^grace christian academy",
+                    "^legacy christian academy", "^i-?school$"]
     exclude_names: ["free world u", "centro de desarrollo", "moulage", "wild west medical"]
   parks:
     exclude_names: ["parks and recreation department", "^nevada state parks$", "nature conservancy",
@@ -51,6 +53,7 @@ place_overrides:
   04d8348a-7589-4aee-91c0-190002195402: {drop: true, note: "Grocery Outlet: does not exist (checked 2026-10-30)"}
   003309e4-3db9-4585-bdc8-7599b2d2650c: {drop: true, note: "Foothill Market: does not exist (checked 2026-10-30)"}
   191f0225-ce09-4319-8c54-8b8c05813e59: {drop: true, note: "Save Mart: does not exist (checked 2026-10-30)"}
+  fddcf37b-a00a-47ee-b3ed-a179861e239b: {drop: true, note: "Capital Christian School: same site as Legacy Christian Academy (NCES PSS 2023-24, K-8); one school (checked 2026-10-31)"}
   9bb486d2-af18-44a9-a2b2-d251aff25620: {lon: -119.754751, lat: 39.187078, note: "Sprouts Farmers Market: moved to the store (checked 2026-10-30)"}
 
 # Segments closed to walkers in reality but not in Overture (fences, locked gates), by Overture

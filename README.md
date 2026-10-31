@@ -29,6 +29,7 @@ the bbox), buffered 2 km so services just outside still count.
 | Census block groups | 80 (46 scored: 40 Carson City, 6 Douglas County) | TIGER/Line 2024 via [pygris](https://github.com/walkerke/pygris) | Public domain |
 | ACS 5-year 2020–2024 | 80 block groups | [Census API](https://www.census.gov/data/developers/data-sets/acs-5year.html): population, age (B01001), income (B19013), vehicles (B25044), income-to-poverty ratio (C17002), with MOEs | Public domain |
 | OSM gates and fences | 300 gates / 302 fence lines | [Overpass API](https://overpass-api.de), fetched 2026-10-30 (`barrier=*`) | ODbL, © OpenStreetMap contributors |
+| NCES school lists (cross-check) | 19 schools (13 public, 6 private) | [NCES EDGE](https://nces.ed.gov/programs/edge/) public school locations + administrative data 2024-25 (grade span, status); [Private School Universe Survey](https://nces.ed.gov/surveys/pss/) 2023-24, 2021-22 for non-respondents | Public domain |
 | JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
 
 Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
@@ -36,6 +37,13 @@ overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart 
 Places checked on the ground are dropped or moved one by one (`place_overrides`, keyed by Overture id):
 for groceries, one Walmart is now a Ross store, three listed stores don't exist, and one point was moved
 to its store, which leaves 12 full-service grocery stores.
+Schools were checked against NCES (`make xcheck`): a school counts if it is open, not online-only,
+and teaches any of grades K-8. 13 of the 14 schools first selected matched an NCES school with a K-8
+grade span, within about 100 m. The 14th, Capital Christian School, has no NCES record; Overture lists
+the same site again as Legacy Christian Academy, which NCES has as K-8, so the old name was dropped.
+Overture also missed two schools that teach K-8 grades: Grace Christian Academy (tagged
+`private_school`) and iSchool (grades 1-12, tagged `college_counseling`). That leaves 16 schools.
+Overture has no grade levels, so without NCES the private schools' grades could not be checked.
 Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
 
 ACS caveat: at block-group level the coefficient of variation is above 30 % in 34 of the 45 populated
@@ -104,24 +112,24 @@ are the 5th–95th percentiles of 1,000 Monte Carlo draws from the ACS margins o
 of one of the 12 full-service grocery stores, measured along the walking network; 41.1 % have none
 within 1,600 m (about 20 minutes). Another 3,690 (5.9 %) have a convenience store but no grocery
 within 400 m. Transit is the most walkable service (32.7 % within 400 m of a JAC stop), then parks
-(23.0 %); healthcare (2.2 %) and K-8 schools (3.3 %) are as rare as groceries.
+(23.0 %); healthcare (2.2 %) and K-8 schools (3.6 %) are as rare as groceries.
 
 **Access is better where incomes are lower.** The lowest-income third of residents (block-group median
-household income $34k–61k) has a mean access score of 47.5; the highest-income third ($82k–143k) has
+household income $34k–61k) has a mean access score of 47.9; the highest-income third ($82k–143k) has
 23.3. Across block groups, Spearman ρ between the access score and median household income is −0.59
-(MC range −0.60 to −0.30), and +0.45 with the share of residents below 200 % of the poverty line.
+(MC range −0.59 to −0.30), and +0.45 with the share of residents below 200 % of the poverty line.
 Residents below that line are more likely than average to be within 400 m of a transit stop (46.4 %
 [42.7–50.0] vs 32.7 %) and of a grocery store (3.1 % vs 2.1 %); so are households without a car
 (43.5 % and 3.8 %).
 
 **Older residents have less access.** 1.6 % [1.3–1.8] of residents 65+ live within 400 m of a
-grocery store, and their mean access score is 31.1 against 34.2 for all residents (ρ with the 65+
+grocery store, and their mean access score is 31.3 against 34.4 for all residents (ρ with the 65+
 share: −0.34).
 
 **Low access clusters in the south.** The access score is strongly clustered (global Moran's I = 0.64,
 p = 0.0001, 9,999 permutations). Local Moran's I finds 8 low-low block groups at p < 0.05 (6 after a
 false-discovery-rate correction), all between 39.03 °N and 39.12 °N: the Douglas County block groups
-and two at the south end of Carson City. The 6 high-high block groups (3 after correction) lie further
+and two at the south end of Carson City. The 7 high-high block groups (2 after correction) lie further
 north, at 39.17–39.18 °N.
 
 These are block-group comparisons (ecological inference): a group is assumed to live in its block

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import census, db, equity, export, extract, gtfs, network, osm, scoring
+from . import census, db, equity, export, extract, gtfs, network, osm, scoring, xcheck
 from .config import CityConfig, default_city, load_city
 
 
@@ -28,6 +28,13 @@ def step_osm(cfg: CityConfig, args: argparse.Namespace) -> None:
         census.run(cfg)
     extent = census.scored_extent(cfg).buffered(cfg.edge_buffer_m, cfg.analysis_epsg)
     osm.run(cfg, extent, force=args.force)
+
+
+def step_xcheck(cfg: CityConfig, args: argparse.Namespace) -> None:
+    if not (cfg.raw_dir / "block_groups.parquet").exists():
+        census.run(cfg)
+    extent = census.scored_extent(cfg).buffered(cfg.edge_buffer_m, cfg.analysis_epsg)
+    xcheck.run(cfg, args.source, extent, force=args.force)
 
 
 def step_phase1(cfg: CityConfig, args: argparse.Namespace) -> None:
@@ -83,6 +90,7 @@ STEPS = {
     "phase2": step_phase2,
     "equity": step_equity,
     "export": step_export,
+    "xcheck": step_xcheck,
 }
 
 
@@ -92,6 +100,7 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--city", default=default_city(), help="config/cities/<slug>.yaml")
     p.add_argument("--force", action="store_true", help="re-download even if outputs exist")
     p.add_argument("--only", nargs="+", help="extract: subset of outputs (e.g. places parks)")
+    p.add_argument("--source", default="schools", help="xcheck: source to compare (schools)")
     args = p.parse_args(argv)
     cfg = load_city(args.city)
     print(

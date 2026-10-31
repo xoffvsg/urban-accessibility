@@ -130,6 +130,7 @@ class Scoring:
     equity: dict[str, float] = field(default_factory=lambda: dict(EQUITY_DEFAULTS))
     web: dict[str, Any] = field(default_factory=dict)  # passed through to the web summary
     place_overrides: dict[str, PlaceOverride] = field(default_factory=dict)
+    xcheck: dict[str, Any] = field(default_factory=lambda: dict(XCHECK_DEFAULTS))
 
     @property
     def near_m(self) -> float:
@@ -164,6 +165,13 @@ EQUITY_DEFAULTS = {
     "lisa_permutations": 9999.0,
     "lisa_alpha": 0.05,
     "poverty_ratio": 2.0,
+}
+XCHECK_DEFAULTS: dict[str, Any] = {
+    "confirm_m": 150.0,
+    "max_m": 500.0,
+    "min_name_similarity": 0.6,
+    "overture_taxonomy": ["education"],
+    "schools": {"public_year": "2425", "private_years": ["2324", "2122"]},
 }
 
 
@@ -352,6 +360,7 @@ def parse_scoring(
             **{k: float(v) for k, v in (raw.get("equity") or {}).items()},
         },
         place_overrides=parse_place_overrides(place_overrides),
+        xcheck=XCHECK_DEFAULTS | (raw.get("xcheck") or {}),
     )
 
 
