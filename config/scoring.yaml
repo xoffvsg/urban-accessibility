@@ -124,3 +124,5 @@ web:
     convenience: "#F0E442"
   cv_flag_pct: 30                 # ACS estimates with CV above this get an uncertainty badge
   basemap_style: "https://tiles.openfreemap.org/styles/positron"
+  # neighborhood names (export.area_names): parks whose name contains one of these don't name an area
+  area_name_skip: ["trail", "trailhead", "open space", "property"]

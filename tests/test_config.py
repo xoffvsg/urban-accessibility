@@ -162,3 +162,15 @@ def test_subtype_sql():
         _subtype_sql([None, "residential"]) == "(b.subtype IS NULL OR b.subtype IN ('residential'))"
     )
     assert _subtype_sql([]) == "(false)"
+
+
+def test_parse_area_names():
+    import pytest
+
+    from urban_access.config import ConfigError, _parse_area_names
+
+    assert _parse_area_names({325100006021: " Mills Park "}) == {"325100006021": "Mills Park"}
+    with pytest.raises(ConfigError):
+        _parse_area_names({"3251": "x"})
+    with pytest.raises(ConfigError):
+        _parse_area_names({"325100006021": ""})

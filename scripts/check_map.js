@@ -34,6 +34,21 @@ const out = process.argv[2] || ".";
   await page.screenshot({ path: `${out}/map_grocery_only.png` });
   await page.click("#reset");
 
+  // sliders: moving one changes only those below it; the total stays 100
+  const setSlider = (id, v) => page.$eval(`#w-${id}`, (el, v) => {
+    el.value = v; el.dispatchEvent(new Event("input", { bubbles: true }));
+  }, v);
+  const readW = () => page.$$eval(".weight input[type=range]", (els) => els.map((e) => +e.value));
+  const w0 = await readW();
+  await setSlider("grocery", 40);
+  const w1 = await readW();
+  await setSlider("healthcare", 30);
+  const w2 = await readW();
+  const sliders = { default: w0, grocery_40: w1, then_healthcare_30: w2,
+    sums: [w0, w1, w2].map((w) => w.reduce((a, x) => a + x, 0)),
+    grocery_kept: w2[0] === w1[0], last_disabled: await page.$eval(".weight:last-child input[type=range]", (e) => e.disabled) };
+  await page.click("#reset");
+
   // popup on a block group
   const pt = await page.evaluate(() => {
     const f = map.queryRenderedFeatures({ layers: ["bg-fill"] }).find((x) => x.properties.has_residents);
@@ -52,7 +67,7 @@ const out = process.argv[2] || ".";
   await page.screenshot({ path: `${out}/map_mobile.png`, fullPage: false });
 
   console.log(JSON.stringify({ block_groups_rendered: n, services_rendered: nsvc, chart_bars: bars,
-    before, first_bar_grocery_only: firstBar, grocery_weight: pctGrocery,
+    before, first_bar_grocery_only: firstBar, grocery_weight: pctGrocery, sliders,
     popup: popup && popup.slice(0, 400), errors }, null, 1));
   await browser.close();
 })();

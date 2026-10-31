@@ -67,7 +67,13 @@
    "convenience": "#F0E442"
   },
   "cv_flag_pct": 30,
-  "basemap_style": "https://tiles.openfreemap.org/styles/positron"
+  "basemap_style": "https://tiles.openfreemap.org/styles/positron",
+  "area_name_skip": [
+   "trail",
+   "trailhead",
+   "open space",
+   "property"
+  ]
  },
  "attribution": [
   "Places: Overture Maps Foundation (CDLA-Permissive-2.0)",
@@ -149,7 +155,8 @@
  "block_groups": [
   {
    "geoid": "320050022005",
-   "label": "Tract 22, BG 5 (Douglas County)",
+   "label": "Stephanie Way",
+   "census_label": "Census block group 22-5, Douglas County",
    "pop_total": 1334,
    "access_score": 7.6,
    "grocery_score": 0.0,
@@ -166,7 +173,8 @@
   },
   {
    "geoid": "325100006013",
-   "label": "Tract 6.01, BG 3 (Carson City)",
+   "label": "Fairview Dr / E 5th St",
+   "census_label": "Census block group 6.01-3, Carson City",
    "pop_total": 0,
    "access_score": null,
    "grocery_score": null,
@@ -183,7 +191,8 @@
   },
   {
    "geoid": "320050022004",
-   "label": "Tract 22, BG 4 (Douglas County)",
+   "label": "Johnson Ln / Vicky Ln",
+   "census_label": "Census block group 22-4, Douglas County",
    "pop_total": 1265,
    "access_score": 8.2,
    "grocery_score": 0.0,
@@ -200,7 +209,8 @@
   },
   {
    "geoid": "320050022001",
-   "label": "Tract 22, BG 1 (Douglas County)",
+   "label": "Johnson Lane Park area",
+   "census_label": "Census block group 22-1, Douglas County",
    "pop_total": 1214,
    "access_score": 6.1,
    "grocery_score": 0.0,
@@ -217,7 +227,8 @@
   },
   {
    "geoid": "320050020002",
-   "label": "Tract 20, BG 2 (Douglas County)",
+   "label": "James Lee Park area",
+   "census_label": "Census block group 20-2, Douglas County",
    "pop_total": 2492,
    "access_score": 14.1,
    "grocery_score": 14.6,
@@ -234,7 +245,8 @@
   },
   {
    "geoid": "320050021001",
-   "label": "Tract 21, BG 1 (Douglas County)",
+   "label": "South Sunridge Park area",
+   "census_label": "Census block group 21-1, Douglas County",
    "pop_total": 1954,
    "access_score": 9.8,
    "grocery_score": 2.3,
@@ -251,7 +263,8 @@
   },
   {
    "geoid": "320050020001",
-   "label": "Tract 20, BG 1 (Douglas County)",
+   "label": "Valley Vista Park area",
+   "census_label": "Census block group 20-1, Douglas County",
    "pop_total": 786,
    "access_score": 18.5,
    "grocery_score": 32.3,
@@ -268,7 +281,8 @@
   },
   {
    "geoid": "325100005013",
-   "label": "Tract 5.01, BG 3 (Carson City)",
+   "label": "N Roop St / Hot Springs Rd",
+   "census_label": "Census block group 5.01-3, Carson City",
    "pop_total": 1585,
    "access_score": 50.6,
    "grocery_score": 32.1,
@@ -285,7 +299,8 @@
   },
   {
    "geoid": "325100006021",
-   "label": "Tract 6.02, BG 1 (Carson City)",
+   "label": "Mills Park area",
+   "census_label": "Census block group 6.02-1, Carson City",
    "pop_total": 1867,
    "access_score": 49.4,
    "grocery_score": 34.4,
@@ -302,7 +317,8 @@
   },
   {
    "geoid": "325100006012",
-   "label": "Tract 6.01, BG 2 (Carson City)",
+   "label": "Greenbelt Park area",
+   "census_label": "Census block group 6.01-2, Carson City",
    "pop_total": 1908,
    "access_score": 37.1,
    "grocery_score": 11.9,
@@ -319,7 +335,8 @@
   },
   {
    "geoid": "325100006022",
-   "label": "Tract 6.02, BG 2 (Carson City)",
+   "label": "E 5th St / Airport Rd",
+   "census_label": "Census block group 6.02-2, Carson City",
    "pop_total": 1171,
    "access_score": 31.1,
    "grocery_score": 16.0,
@@ -336,7 +353,8 @@
   },
   {
    "geoid": "325100005015",
-   "label": "Tract 5.01, BG 5 (Carson City)",
+   "label": "Blackwell's Pond Park area",
+   "census_label": "Census block group 5.01-5, Carson City",
    "pop_total": 949,
    "access_score": 46.3,
    "grocery_score": 38.5,
@@ -353,7 +371,8 @@
   },
   {
    "geoid": "325100006011",
-   "label": "Tract 6.01, BG 1 (Carson City)",
+   "label": "Governors Field area",
+   "census_label": "Census block group 6.01-1, Carson City",
    "pop_total": 1213,
    "access_score": 26.4,
    "grocery_score": 0.0,
@@ -370,7 +389,8 @@
   },
   {
    "geoid": "325100009004",
-   "label": "Tract 9, BG 4 (Carson City)",
+   "label": "Lincoln Hwy / E College Pkwy",
+   "census_label": "Census block group 9-4, Carson City",
    "pop_total": 1142,
    "access_score": 41.6,
    "grocery_score": 48.0,
@@ -387,7 +407,8 @@
   },
   {
    "geoid": "325100010013",
-   "label": "Tract 10.01, BG 3 (Carson City)",
+   "label": "Park Terrace Park area",
+   "census_label": "Census block group 10.01-3, Carson City",
    "pop_total": 1400,
    "access_score": 55.0,
    "grocery_score": 48.3,
@@ -404,7 +425,8 @@
   },
   {
    "geoid": "325100001001",
-   "label": "Tract 1, BG 1 (Carson City)",
+   "label": "Capitol Complex area",
+   "census_label": "Census block group 1-1, Carson City",
    "pop_total": 1002,
    "access_score": 62.9,
    "grocery_score": 33.8,
@@ -421,7 +443,8 @@
   },
   {
    "geoid": "325100001002",
-   "label": "Tract 1, BG 2 (Carson City)",
+   "label": "S Division St / W 5th St",
+   "census_label": "Census block group 1-2, Carson City",
    "pop_total": 1108,
    "access_score": 41.8,
    "grocery_score": 2.3,
@@ -438,7 +461,8 @@
   },
   {
    "geoid": "325100001003",
-   "label": "Tract 1, BG 3 (Carson City)",
+   "label": "S Carson St / S Curry St",
+   "census_label": "Census block group 1-3, Carson City",
    "pop_total": 737,
    "access_score": 36.0,
    "grocery_score": 1.3,
@@ -455,7 +479,8 @@
   },
   {
    "geoid": "325100002001",
-   "label": "Tract 2, BG 1 (Carson City)",
+   "label": "John Mankins Park area",
+   "census_label": "Census block group 2-1, Carson City",
    "pop_total": 2189,
    "access_score": 47.6,
    "grocery_score": 25.2,
@@ -472,7 +497,8 @@
   },
   {
    "geoid": "325100002003",
-   "label": "Tract 2, BG 3 (Carson City)",
+   "label": "Treadway Park area",
+   "census_label": "Census block group 2-3, Carson City",
    "pop_total": 916,
    "access_score": 61.2,
    "grocery_score": 25.0,
@@ -489,7 +515,8 @@
   },
   {
    "geoid": "325100009002",
-   "label": "Tract 9, BG 2 (Carson City)",
+   "label": "E College Pkwy / E Arrowhead Dr",
+   "census_label": "Census block group 9-2, Carson City",
    "pop_total": 1951,
    "access_score": 16.8,
    "grocery_score": 14.4,
@@ -506,7 +533,8 @@
   },
   {
    "geoid": "325100004002",
-   "label": "Tract 4, BG 2 (Carson City)",
+   "label": "Ronald D. Wilson Memorial Park area",
+   "census_label": "Census block group 4-2, Carson City",
    "pop_total": 1128,
    "access_score": 29.8,
    "grocery_score": 18.6,
@@ -523,7 +551,8 @@
   },
   {
    "geoid": "325100004003",
-   "label": "Tract 4, BG 3 (Carson City)",
+   "label": "N Carson St / W College Pkwy (north)",
+   "census_label": "Census block group 4-3, Carson City",
    "pop_total": 1585,
    "access_score": 36.8,
    "grocery_score": 41.7,
@@ -540,7 +569,8 @@
   },
   {
    "geoid": "325100005012",
-   "label": "Tract 5.01, BG 2 (Carson City)",
+   "label": "E College Pkwy / N Roop St",
+   "census_label": "Census block group 5.01-2, Carson City",
    "pop_total": 1175,
    "access_score": 53.8,
    "grocery_score": 51.5,
@@ -557,7 +587,8 @@
   },
   {
    "geoid": "325100005022",
-   "label": "Tract 5.02, BG 2 (Carson City)",
+   "label": "E William St / E Long St",
+   "census_label": "Census block group 5.02-2, Carson City",
    "pop_total": 749,
    "access_score": 58.2,
    "grocery_score": 44.2,
@@ -574,7 +605,8 @@
   },
   {
    "geoid": "325100008002",
-   "label": "Tract 8, BG 2 (Carson City)",
+   "label": "Pete Livermore Sports Complex area",
+   "census_label": "Census block group 8-2, Carson City",
    "pop_total": 1152,
    "access_score": 20.7,
    "grocery_score": 3.6,
@@ -591,7 +623,8 @@
   },
   {
    "geoid": "325100009001",
-   "label": "Tract 9, BG 1 (Carson City)",
+   "label": "Riley Circle Park area",
+   "census_label": "Census block group 9-1, Carson City",
    "pop_total": 698,
    "access_score": 34.2,
    "grocery_score": 11.2,
@@ -608,7 +641,8 @@
   },
   {
    "geoid": "325100002002",
-   "label": "Tract 2, BG 2 (Carson City)",
+   "label": "Carriage Square Park area",
+   "census_label": "Census block group 2-2, Carson City",
    "pop_total": 912,
    "access_score": 55.0,
    "grocery_score": 7.4,
@@ -625,7 +659,8 @@
   },
   {
    "geoid": "325100005021",
-   "label": "Tract 5.02, BG 1 (Carson City)",
+   "label": "Foreman-Roberts Historic House And Park area",
+   "census_label": "Census block group 5.02-1, Carson City",
    "pop_total": 751,
    "access_score": 55.1,
    "grocery_score": 36.8,
@@ -642,7 +677,8 @@
   },
   {
    "geoid": "325100008001",
-   "label": "Tract 8, BG 1 (Carson City)",
+   "label": "Ross Gold Park area",
+   "census_label": "Census block group 8-1, Carson City",
    "pop_total": 1488,
    "access_score": 33.0,
    "grocery_score": 20.6,
@@ -659,7 +695,8 @@
   },
   {
    "geoid": "325100007021",
-   "label": "Tract 7.02, BG 1 (Carson City)",
+   "label": "S Carson St / Silver Sage Dr",
+   "census_label": "Census block group 7.02-1, Carson City",
    "pop_total": 1818,
    "access_score": 48.2,
    "grocery_score": 47.6,
@@ -676,7 +713,8 @@
   },
   {
    "geoid": "325100007012",
-   "label": "Tract 7.01, BG 2 (Carson City)",
+   "label": "S Edmonds Dr / Fairview Dr",
+   "census_label": "Census block group 7.01-2, Carson City",
    "pop_total": 1185,
    "access_score": 22.9,
    "grocery_score": 0.0,
@@ -693,7 +731,8 @@
   },
   {
    "geoid": "325100005014",
-   "label": "Tract 5.01, BG 4 (Carson City)",
+   "label": "Lone Mountain Park area",
+   "census_label": "Census block group 5.01-4, Carson City",
    "pop_total": 1829,
    "access_score": 45.2,
    "grocery_score": 31.8,
@@ -710,7 +749,8 @@
   },
   {
    "geoid": "325100009003",
-   "label": "Tract 9, BG 3 (Carson City)",
+   "label": "Airport Rd / N Lompa Ln",
+   "census_label": "Census block group 9-3, Carson City",
    "pop_total": 1872,
    "access_score": 43.7,
    "grocery_score": 36.2,
@@ -727,7 +767,8 @@
   },
   {
    "geoid": "325100010012",
-   "label": "Tract 10.01, BG 2 (Carson City)",
+   "label": "Airport Rd / Lincoln Hwy",
+   "census_label": "Census block group 10.01-2, Carson City",
    "pop_total": 2024,
    "access_score": 62.3,
    "grocery_score": 59.0,
@@ -744,7 +785,8 @@
   },
   {
    "geoid": "325100010023",
-   "label": "Tract 10.02, BG 3 (Carson City)",
+   "label": "Morgan Mill River Access Park area",
+   "census_label": "Census block group 10.02-3, Carson City",
    "pop_total": 486,
    "access_score": 24.6,
    "grocery_score": 19.7,
@@ -761,7 +803,8 @@
   },
   {
    "geoid": "325100010022",
-   "label": "Tract 10.02, BG 2 (Carson City)",
+   "label": "Empire Ranch Estates Park #2 area",
+   "census_label": "Census block group 10.02-2, Carson City",
    "pop_total": 1926,
    "access_score": 28.9,
    "grocery_score": 14.2,
@@ -778,7 +821,8 @@
   },
   {
    "geoid": "325100007023",
-   "label": "Tract 7.02, BG 3 (Carson City)",
+   "label": "S Saliman Rd / Sonoma St",
+   "census_label": "Census block group 7.02-3, Carson City",
    "pop_total": 695,
    "access_score": 28.2,
    "grocery_score": 0.0,
@@ -795,7 +839,8 @@
   },
   {
    "geoid": "325100005011",
-   "label": "Tract 5.01, BG 1 (Carson City)",
+   "label": "N Carson St / W College Pkwy (south)",
+   "census_label": "Census block group 5.01-1, Carson City",
    "pop_total": 673,
    "access_score": 44.2,
    "grocery_score": 38.6,
@@ -812,7 +857,8 @@
   },
   {
    "geoid": "325100007022",
-   "label": "Tract 7.02, BG 2 (Carson City)",
+   "label": "Sonoma Park area",
+   "census_label": "Census block group 7.02-2, Carson City",
    "pop_total": 1362,
    "access_score": 45.8,
    "grocery_score": 23.3,
@@ -829,7 +875,8 @@
   },
   {
    "geoid": "325100005023",
-   "label": "Tract 5.02, BG 3 (Carson City)",
+   "label": "Fulstone Family Park area",
+   "census_label": "Census block group 5.02-3, Carson City",
    "pop_total": 1755,
    "access_score": 61.0,
    "grocery_score": 64.6,
@@ -846,7 +893,8 @@
   },
   {
    "geoid": "325100007011",
-   "label": "Tract 7.01, BG 1 (Carson City)",
+   "label": "S Saliman Rd / Colorado St",
+   "census_label": "Census block group 7.01-1, Carson City",
    "pop_total": 1042,
    "access_score": 30.5,
    "grocery_score": 0.0,
@@ -863,7 +911,8 @@
   },
   {
    "geoid": "325100008003",
-   "label": "Tract 8, BG 3 (Carson City)",
+   "label": "Silver Saddle Ranch area",
+   "census_label": "Census block group 8-3, Carson City",
    "pop_total": 3054,
    "access_score": 6.4,
    "grocery_score": 0.0,
@@ -880,7 +929,8 @@
   },
   {
    "geoid": "325100010011",
-   "label": "Tract 10.01, BG 1 (Carson City)",
+   "label": "Fairview Dr / Airport Rd",
+   "census_label": "Census block group 10.01-1, Carson City",
    "pop_total": 1031,
    "access_score": 55.8,
    "grocery_score": 30.1,
@@ -897,7 +947,8 @@
   },
   {
    "geoid": "325100003003",
-   "label": "Tract 3, BG 3 (Carson City)",
+   "label": "Long Ranch Park area",
+   "census_label": "Census block group 3-3, Carson City",
    "pop_total": 1817,
    "access_score": 24.6,
    "grocery_score": 12.6,
@@ -914,7 +965,8 @@
   },
   {
    "geoid": "325100007013",
-   "label": "Tract 7.01, BG 3 (Carson City)",
+   "label": "Colorado St / S Carson St",
+   "census_label": "Census block group 7.01-3, Carson City",
    "pop_total": 1661,
    "access_score": 39.0,
    "grocery_score": 1.0,
@@ -930,5 +982,5 @@
    ]
   }
  ],
- "created_utc": "2026-10-31T21:20:33+00:00"
+ "created_utc": "2026-10-31T22:17:22+00:00"
 }

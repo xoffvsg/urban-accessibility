@@ -200,6 +200,7 @@ class CityConfig:
     xcheck: dict[str, Any] = field(default_factory=dict)  # city-specific cross-check settings
     extra_parks: bool = False  # add city park polygons (xcheck.city_parks_url) to the parks layer
     homes: list[dict[str, Any]] = field(default_factory=list)  # parcel dwelling-unit sources
+    area_names: dict[str, str] = field(default_factory=dict)  # Census geoid → neighborhood name
 
     @property
     def raw_dir(self) -> Path:
@@ -278,6 +279,19 @@ def _parse_web(raw: dict[str, Any], services: list[str]) -> dict[str, Any]:
     if missing:
         raise ConfigError(f"web: service_colors missing {sorted(missing)}")
     return dict(raw) | {"class_breaks": breaks}
+
+
+def _parse_area_names(raw: Any) -> dict[str, str]:
+    """`area_names:` → {12-digit block-group geoid: name} (overrides the generated names)."""
+    out = {}
+    for k, v in (raw or {}).items():
+        k = str(k)
+        if len(k) != 12 or not k.isdigit():
+            raise ConfigError(f"area_names: key must be a 12-digit block-group geoid, got {k!r}")
+        if not isinstance(v, str) or not v.strip():
+            raise ConfigError(f"area_names[{k}]: name must be a non-empty string")
+        out[k] = v.strip()
+    return out
 
 
 def _parse_homes(raw: Any) -> list[dict[str, Any]]:
@@ -444,6 +458,7 @@ def parse_city(raw: dict[str, Any], scoring_raw: dict[str, Any]) -> CityConfig:
         xcheck=dict(raw.get("xcheck") or {}),
         extra_parks=bool(raw.get("extra_parks", False)),
         homes=_parse_homes(raw.get("homes")),
+        area_names=_parse_area_names(raw.get("area_names")),
     )
 
 

@@ -23,8 +23,12 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: v
 p { margin: 4px 0; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
-#headline { margin-top: 8px; font-size: 15px; }
-#headline strong { font-size: 18px; }
+#headline { margin-top: 8px; }
+#headline table.near { border-collapse: collapse; width: 100%; margin-top: 2px; }
+#headline .near td, #headline .near th { padding: 1px 4px; }
+#headline .near th { font-size: 11px; font-weight: 600; color: var(--muted); }
+#headline .near .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#headline .near strong { font-size: 15px; }
 button.link { background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit;
               text-transform: none; letter-spacing: 0; padding: 0; }
 
@@ -54,6 +58,9 @@ button.link { background: none; border: 0; color: var(--accent); cursor: pointer
 #chart .bar rect.bg { fill: transparent; }
 
 footer { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 8px; }
+footer #sources { font-size: 10px; line-height: 1.35; }
+.maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib a { font-size: 10px; }
+.weight input[type=range]:disabled { opacity: .45; }
 
 /* popup */
 .maplibregl-popup-content { padding: 10px 12px; max-width: 320px; font-size: 12.5px; }

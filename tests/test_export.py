@@ -5,7 +5,14 @@ import pytest
 from shapely.geometry import Point, box
 
 from urban_access.config import load_city
-from urban_access.export import block_group_features, service_features, summary
+from urban_access.export import (
+    area_names,
+    block_group_features,
+    service_features,
+    short_street,
+    summary,
+    tract_bg,
+)
 
 CFG = load_city("carson_city")
 SVC = CFG.scoring.scored_services
@@ -63,8 +70,9 @@ def test_block_group_properties_and_crs():
     assert f.crs.to_epsg() == 4326
     assert "heavy_column" not in f and "pop_65plus" not in f
     assert {f"{s}_score" for s in SVC} <= set(f.columns)
-    assert f.loc[0, "label"] == "Tract 1, BG 1 (Carson City)"
-    assert f.loc[1, "label"] == "Tract 6.01, BG 3 (Carson City)"
+    assert f.loc[0, "label"] == "Neighborhood 1-1"  # no names given: default
+    assert f.loc[0, "census_label"] == "Census block group 1-1, Carson City"
+    assert f.loc[1, "census_label"] == "Census block group 6.01-3, Carson City"
     assert f.loc[0, "access_score"] == pytest.approx(41.2)
     assert not f.loc[1, "has_residents"] and f.loc[1, "lisa_cluster"] == ""
 
@@ -105,3 +113,84 @@ def test_summary_keys_and_weights():
     assert s["block_groups"][1]["access_score"] is None
     assert s["block_groups"][0]["bbox"] == [0, 0, 1, 1]
     assert s["headline"][0]["pct"] == 2.1
+
+
+def test_names_passed_to_features():
+    names = pd.Series({"325100001001": "Mills Park area"})
+    f = block_group_features(_bg(), _eq(), CFG.scoring, {"32510": "Carson City"}, names)
+    assert list(f["label"]) == ["Mills Park area", "Neighborhood 6.01-3"]
+
+
+@pytest.mark.parametrize(
+    ("name", "short"),
+    [
+        ("South Carson Street", "S Carson St"),
+        ("East College Parkway", "E College Pkwy"),
+        ("Fairview Drive", "Fairview Dr"),
+        ("Lincoln Highway", "Lincoln Hwy"),
+        ("Quail Run Way", "Quail Run Way"),
+        ("North", "North"),  # a one-word name is left alone
+    ],
+)
+def test_short_street(name, short):
+    assert short_street(name) == short
+
+
+def test_tract_bg():
+    assert tract_bg("001001", "2") == "10.01-2"
+    assert tract_bg("000100", "1") == "1-1"
+
+
+def _names_inputs():
+    bg = pd.DataFrame(
+        {
+            "geoid": ["A", "B", "C", "D"],
+            "tractce": ["000100", "000200", "000300", "000400"],
+            "blkgrpce": ["1", "1", "1", "1"],
+            "lat": [39.2, 39.1, 39.15, 39.0],
+        }
+    )
+    parks = pd.DataFrame(
+        {
+            "geoid": ["A", "B", "B", "C"],
+            "name": ["Mills Park", "Mills Park", "Big Hills Park", "Ash Canyon Trail"],
+            "inside_m2": [9000.0, 1000.0, 2000.0, 5000.0],
+            "park_m2": [10000.0, 10000.0, 10000.0, 5000.0],
+        }
+    )
+    roads = pd.DataFrame(
+        {
+            "geoid": ["B", "B", "B", "C", "C", "D"],
+            "name": [
+                "North Carson Street",
+                "Fairview Drive",
+                "Elm Court",
+                "North Carson Street",
+                "Fairview Drive",
+                "Elm Court",
+            ],
+            "class": ["primary", "secondary", "residential", "primary", "secondary", "residential"],
+            "length_m": [500.0, 300.0, 900.0, 400.0, 200.0, 100.0],
+        }  # fmt: skip
+    )
+    return bg, parks, roads
+
+
+def test_area_names_rules():
+    bg, parks, roads = _names_inputs()
+    n = area_names(bg, parks, roads, skip=["trail"]).set_index("geoid")
+    assert n.at["A", "name"] == "Mills Park area"  # 90 % inside A
+    # B: Mills Park is mostly in A and Big Hills only 20 % inside → arterials, longest first
+    assert n.at["B", "source"] == "streets"
+    # B and C both get "N Carson St / Fairview Dr" (trail skipped in C) → north / south by latitude
+    assert n.at["C", "name"] == "N Carson St / Fairview Dr (north)"
+    assert n.at["B", "name"] == "N Carson St / Fairview Dr (south)"
+    assert n.at["D", "name"] == "Elm Ct"  # no arterial: longest street
+    assert n["name"].is_unique
+
+
+def test_area_names_override_and_fallback():
+    bg, parks, roads = _names_inputs()
+    n = area_names(bg, parks.iloc[0:0], roads.iloc[0:0], {"A": "Downtown"}).set_index("geoid")
+    assert n.at["A", "name"] == "Downtown" and n.at["A", "source"] == "override"
+    assert n.at["B", "name"] == "Neighborhood 2-1"

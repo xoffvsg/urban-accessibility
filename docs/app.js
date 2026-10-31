@@ -6,6 +6,8 @@ const params = new URLSearchParams(location.search);
 const CITY = (params.get("city") || "carson_city").replace(/[^a-z0-9_]/g, "");
 const LABELS = { grocery: "Grocery", healthcare: "Healthcare", schools: "Schools (K-8)",
                  transit: "Transit stop", parks: "Parks", convenience: "Convenience store" };
+const HEADLINE_LABELS = { grocery: "a full-service grocery store", healthcare: "primary care, urgent care or a pharmacy",
+                         transit: "a transit stop", schools: "a K-8 school", parks: "a park" };
 const LISA = { HH: "#d7191c", LL: "#2c7bb6" };
 
 let S, map, popup, weights = {}, enabled = {}, hovered = null;
@@ -14,6 +16,46 @@ const fmt = (v, d = 0) => (v === null || v === undefined || Number.isNaN(v)) ? "
   : Number(v).toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
 
 /* ---------- weights and scores ---------- */
+/* Weights are whole percentages that always sum to 100 over the enabled services. Moving a slider
+   changes only the sliders below it (in proportion to their values); the ones above stay put, so
+   the last enabled slider just takes what is left. */
+function active() { return S.services.filter((s) => enabled[s]); }
+
+function share(total, keys, basis) {
+  // split an integer total over keys in proportion to basis (equal if all zero), largest remainder
+  if (!keys.length) return {};
+  const b = keys.map((k) => Math.max(basis[k] || 0, 0));
+  const sum = b.reduce((a, x) => a + x, 0);
+  const raw = keys.map((k, i) => total * (sum > 0 ? b[i] / sum : 1 / keys.length));
+  const out = raw.map(Math.floor);
+  let left = total - out.reduce((a, x) => a + x, 0);
+  raw.map((r, i) => [r - out[i], i]).sort((x, y) => y[0] - x[0]).forEach(([, i]) => { if (left > 0) { out[i]++; left--; } });
+  return Object.fromEntries(keys.map((k, i) => [k, out[i]]));
+}
+
+function setWeight(s, v) {
+  const on = active(), i = on.indexOf(s);
+  const above = on.slice(0, i), below = on.slice(i + 1);
+  const free = 100 - above.reduce((a, k) => a + weights[k], 0);
+  weights[s] = below.length ? Math.min(Math.max(v, 0), free) : free;
+  Object.assign(weights, share(free - weights[s], below, weights));
+}
+
+function rescale(basis) {
+  for (const s of S.services) if (!enabled[s]) weights[s] = 0;
+  Object.assign(weights, share(100, active(), basis));
+}
+
+function syncSliders() {
+  const on = active();
+  for (const s of S.services) {
+    const el = document.getElementById(`w-${s}`);
+    el.value = weights[s];
+    el.disabled = !enabled[s] || on.indexOf(s) === on.length - 1;
+    el.title = el.disabled && enabled[s] ? "Takes what the sliders above leave" : "";
+  }
+}
+
 function normWeights() {
   const on = S.services.filter((s) => enabled[s] && weights[s] > 0);
   const tot = on.reduce((a, s) => a + weights[s], 0);
@@ -44,13 +86,20 @@ function classColor(v) {
 function buildPanel() {
   document.title = `Walking access — ${S.city}`;
   document.getElementById("title").textContent = `Walking access to essential services — ${S.city}`;
-  document.getElementById("subtitle").textContent =
-    `${S.block_groups.length} Census block groups · Overture ${S.overture_release} · ACS 5-year ${S.acs_year}`;
-  const g = S.headline.find((h) => h.metric === "grocery_le_400m");
-  if (g) {
+  document.getElementById("subtitle").innerHTML =
+    `${S.block_groups.length} neighborhoods · Overture ${S.overture_release} · ACS 5-year ${S.acs_year}` +
+    `<br><span class="small">Neighborhoods are Census block groups, about 500–3,000 residents each.</span>`;
+  const near = (s) => S.headline.find((h) => h.metric === `${s}_le_400m`);
+  const rowsNear = S.services.filter(near).map((s) => {
+    const h = near(s);
+    return `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${HEADLINE_LABELS[s] || LABELS[s] || s}</td>
+      <td class="num"><strong>${fmt(h.pct, 1)} %</strong></td>
+      <td class="num muted">${fmt(Math.round(h.residents / 10) * 10)}</td></tr>`;
+  });
+  if (rowsNear.length) {
     document.getElementById("headline").innerHTML =
-      `<strong>${fmt(g.pct, 1)} %</strong> of residents (${fmt(Math.round(g.residents / 10) * 10)}) live within a ` +
-      `5-minute walk (400 m) of a full-service grocery store.`;
+      `<p>Residents living within a 5-minute walk (400 m) of …</p>
+       <table class="near"><tr><th></th><th class="num">share</th><th class="num">residents</th></tr>${rowsNear.join("")}</table>`;
   }
 
   const lg = document.getElementById("legend");
@@ -64,21 +113,31 @@ function buildPanel() {
     <div class="weight">
       <input type="checkbox" id="on-${s}" checked aria-label="include ${s}">
       <label for="w-${s}">${LABELS[s] || s}</label>
-      <input type="range" id="w-${s}" min="0" max="100" step="5" value="${Math.round(S.weights[s] * 100)}">
+      <input type="range" id="w-${s}" min="0" max="100" step="1" value="${weights[s]}">
       <span class="pct" id="p-${s}"></span>
     </div>`).join("");
   for (const s of S.services) {
-    document.getElementById(`on-${s}`).addEventListener("change", (e) => { enabled[s] = e.target.checked; update(); });
-    document.getElementById(`w-${s}`).addEventListener("input", (e) => { weights[s] = +e.target.value; update(); });
+    document.getElementById(`on-${s}`).addEventListener("change", (e) => {
+      enabled[s] = e.target.checked;
+      if (enabled[s]) weights[s] = Math.round(S.weights[s] * 100);  // back at its default share
+      if (!active().length) { enabled[s] = true; e.target.checked = true; }  // keep one service
+      rescale(weights);
+      syncSliders(); update();
+    });
+    document.getElementById(`w-${s}`).addEventListener("input", (e) => {
+      setWeight(s, +e.target.value);
+      syncSliders(); update();
+    });
   }
   document.getElementById("reset").addEventListener("click", () => {
     for (const s of S.services) {
-      weights[s] = Math.round(S.weights[s] * 100); enabled[s] = true;
-      document.getElementById(`w-${s}`).value = weights[s];
+      enabled[s] = true;
       document.getElementById(`on-${s}`).checked = true;
     }
-    update();
+    rescale(Object.fromEntries(S.services.map((s) => [s, S.weights[s]])));
+    syncSliders(); update();
   });
+  syncSliders();
 
   const svcTypes = Object.keys(S.web.service_colors);
   document.getElementById("layers").innerHTML =
@@ -103,18 +162,27 @@ function filterServices() {
   map.setFilter("services", ["in", ["get", "service"], ["literal", on]]);
 }
 
+/* names come from data (OSM/Overture/config): escape before putting them into HTML/SVG */
+function esc(t) {
+  return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+function short(t, n) {
+  return t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t;
+}
+
 /* ---------- chart ---------- */
 function drawChart() {
   const w = normWeights();
   const rows = S.block_groups.map((r) => ({ ...r, v: scoreOf(r, w) }))
     .sort((a, b) => (b.v ?? -1) - (a.v ?? -1));
   const H = 15, W = 340, L = 150, R = 30;
-  const svg = [`<svg viewBox="0 0 ${W} ${rows.length * H + 4}" role="img" aria-label="Block groups sorted by score">`];
+  const svg = [`<svg viewBox="0 0 ${W} ${rows.length * H + 4}" role="img" aria-label="Neighborhoods sorted by score">`];
   rows.forEach((r, i) => {
     const y = i * H + 2, len = r.v === null ? 0 : (r.v / 100) * (W - L - R);
     svg.push(`<g class="bar" data-geoid="${r.geoid}">
       <rect class="bg" x="0" y="${y}" width="${W}" height="${H}"></rect>
-      <text x="${L - 4}" y="${y + 11}" text-anchor="end">${r.label.replace(/ \(.*\)/, "")}</text>
+      <title>${esc(r.label)}</title>
+      <text x="${L - 4}" y="${y + 11}" text-anchor="end">${esc(short(r.label, 26))}</text>
       <rect x="${L}" y="${y + 2}" width="${len.toFixed(1)}" height="${H - 4}" fill="${classColor(r.v)}"></rect>
       <text x="${L + len + 3}" y="${y + 11}">${r.v === null ? "no residents" : fmt(r.v, 1)}</text>
     </g>`);
@@ -144,16 +212,18 @@ function popupHtml(p) {
   const w = normWeights();
   const warn = (flag) => flag ? ` <span class="warn" title="ACS margin of error is large (CV > ${S.web.cv_flag_pct} %)">⚠</span>` : "";
   if (!p.has_residents) {
-    return `<div class="popup"><h3>${p.label}</h3><p class="muted">No residents (ACS population 0): not scored.</p></div>`;
+    return `<div class="popup"><h3>${esc(p.label)}</h3><div class="muted small">${esc(p.census_label)}</div>
+      <p class="muted">No residents (ACS population 0): not scored.</p></div>`;
   }
   const row = Object.fromEntries(S.services.map((s) => [`${s}_score`, p[`${s}_score`]]));
   const v = scoreOf({ ...row, access_score: p.access_score }, w);
   const custom = Math.abs(v - p.access_score) > 0.05;
   return `<div class="popup">
-    <h3>${p.label}</h3>
+    <h3>${esc(p.label)}</h3>
+    <div class="muted small">${esc(p.census_label)}</div>
     <div><span class="score">${fmt(v, 1)}</span> / 100
       ${custom ? `<span class="muted">(default weights: ${fmt(p.access_score, 1)})</span>` : ""}</div>
-    <div class="muted">rank ${fmt(p.access_rank)} of ${S.block_groups.filter((r) => r.access_score !== null).length} (default weights)</div>
+    <div class="muted">rank ${fmt(p.access_rank)} of ${S.block_groups.filter((r) => r.access_score !== null).length} neighborhoods (default weights)</div>
     <table>
       <tr><th>Service</th><th>score</th><th>≤ 5 min</th><th>weight</th></tr>
       ${S.services.map((s) => `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${LABELS[s] || s}</td>
@@ -226,7 +296,8 @@ async function main() {
   const res = await fetch(`data/${CITY}_summary.json`);
   if (!res.ok) throw new Error(`summary for "${CITY}" not found`);
   S = await res.json();
-  for (const s of S.services) { weights[s] = Math.round(S.weights[s] * 100); enabled[s] = true; }
+  for (const s of S.services) enabled[s] = true;
+  rescale(Object.fromEntries(S.services.map((s) => [s, S.weights[s]])));
 
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);

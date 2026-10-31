@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Walking access to essential services</title>
-<meta name="description" content="Walking access to grocery, healthcare, schools, transit and parks for every Census block group, measured along the real walking network.">
+<meta name="description" content="Walking access to grocery, healthcare, schools, transit and parks for every neighborhood (Census block group), measured along the real walking network.">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -21,9 +21,11 @@
 
     <section>
       <h2>Score</h2>
-      <p class="muted small">Per Census block group, 0–100: residents' walk along the street and path
-        network to the nearest service, scored ≤ 400 m (5 min) = 1, ≤ 800 m = 0.6, ≤ 1,600 m = 0.3,
-        else 0, averaged over homes and weighted by service.</p>
+      <p class="muted small">0–100 per neighborhood. For every home, we measure the walk along streets
+        and paths to the nearest service of each kind. A walk of up to 400 m (5 min) earns 100 points,
+        up to 800 m 60, up to 1,600 m (20 min) 30, farther 0. A neighborhood's score for a service is
+        the average over its residents (homes with more residents count more); the overall score
+        combines the five services with the weights below.</p>
       <div id="legend" aria-label="Legend"></div>
     </section>
 
@@ -38,7 +40,7 @@
     </section>
 
     <section>
-      <h2>Block groups by score</h2>
+      <h2>Neighborhoods by score</h2>
       <p class="muted small">Hover or click a bar to find it on the map.</p>
       <div id="chart"></div>
     </section>

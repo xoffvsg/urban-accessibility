@@ -302,6 +302,8 @@ service. Every finding quoted in the README must come from a notebook cell. Meth
 - `index.html`: MapLibre choropleth on `access_score` (sequential, colour-blind-safe ramp, fixed
   0–100 classes), popup with name, score, per-service breakdown, population, key ACS fields.
 - Service filter: checkboxes/sliders re-weight services **client-side** from the per-service
+  Weights are whole percentages summing to 100: a slider changes only the sliders below it (in
+  proportion), the last enabled one takes the remainder; unchecking rescales the rest to 100.
   properties (set paint expression / feature-state); map, legend and chart update together.
 - Sorted bar chart of block groups by score, linked to the map (hover/click highlights).
 - Toggleable service-point layer by type; optional LISA cluster outlines (default weights). Basemap:
