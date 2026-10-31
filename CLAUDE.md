@@ -204,6 +204,10 @@ Verify each export in the notebook: row count, CRS, bounds, null geometries, a q
    (trunk = urban Carson/William St, kept), and except segments with a foot denial (`denied`, no
    `heading`, mode absent or `foot`) that no rule allows (`allowed`/`designated` for foot/all modes;
    `as_private` counts as allowed). Rules with `between` apply to the whole segment (limitation).
+   Segments listed in the city's `blocked_segments:` (field-checked fences/gates; Overture has no
+   barriers) are dropped too (`walk_segments.blocked_note`). Gated areas (`gated_areas:` → GeoJSON in
+   `config/cities/`, editable in QGIS): edges crossing the boundary are removed except the listed exit
+   streets, inside edges get `edges.gated`, and origins/destinations snap only to edges on their own side.
    Topology: split each segment at its connectors (`ST_LineSubstring` between consecutive `at`) →
    `edges(id, source, target, cost_m, …)`, undirected, connector UUIDs → bigint `vertices`. Only the
    **largest connected component** (`edges.main`, 98.8 % of length here) is used. Roads without a
@@ -298,7 +302,9 @@ Resolved in Phase 1 planning (2026-10-30):
 
 1. ~~Service mapping~~ → `config/scoring.yaml` `services:` (taxonomy hierarchy match) + per-city
    `services:` name include/exclude lists in `config/cities/<slug>.yaml`. Set from
-   `data/interim/<slug>/service_review.csv` (notebook 00). Grocery = full-service only (convenience
+   `data/interim/<slug>/service_review.csv` (notebook 00). Field-checked single places are dropped or moved
+   by Overture id in the city's `place_overrides:` (status `removed` in the review table). Match places
+   across files by `ref` (first 8 characters of the id), never by `fid`, which is load order. Grocery = full-service only (convenience
    stores are a side metric); healthcare = pharmacy + primary/urgent care + hospital (no
    `doctors_office`, dental, eye, EMS).
 4. ~~JAC GTFS URL~~ → `https://JumpAroundCarson.transloc.com/Secure/Admin/Reports/GTFSDownload.aspx`

@@ -77,14 +77,17 @@ FROM (
 INSERT INTO origins (kind, bg_geoid, pop, geom)
 SELECT 'centroid', geoid, 0, ST_PointOnSurface(geom) FROM block_groups;
 
--- 3. Snap to the nearest main-component edge ---------------------------------------------------
+-- 3. Snap to the nearest main-component edge on the same side of any gated-area boundary -------
 ALTER TABLE origins ADD COLUMN edge_id bigint, ADD COLUMN frac float8, ADD COLUMN snap_m float8;
 UPDATE origins o SET edge_id = n.id,
                      frac = ST_LineLocatePoint(n.geom, o.geom),
                      snap_m = ST_Distance(n.geom, o.geom)
 FROM origins o2
 CROSS JOIN LATERAL (
-    SELECT e.id, e.geom FROM edges e WHERE e.main ORDER BY e.geom <-> o2.geom LIMIT 1
+    SELECT e.id, e.geom FROM edges e
+    WHERE e.main AND e.gated IS NOT DISTINCT FROM (
+        SELECT g.name FROM gated_areas g WHERE ST_Intersects(g.geom, o2.geom) LIMIT 1)
+    ORDER BY e.geom <-> o2.geom LIMIT 1
 ) n
 WHERE o2.id = o.id;
 CREATE INDEX origins_bg_idx ON origins (bg_geoid);

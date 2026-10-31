@@ -110,6 +110,7 @@ def build_service_points(cfg: CityConfig) -> gpd.GeoDataFrame:
     pts = gpd.GeoDataFrame(
         {
             "service": pts["service"],
+            "ref": pts["ref"],
             "dest_key": pts["id"],
             "name": pts["name"],
             "category": pts["taxonomy_primary"],
@@ -126,6 +127,7 @@ def build_service_points(cfg: CityConfig) -> gpd.GeoDataFrame:
         gtfs = gpd.GeoDataFrame(
             {
                 "service": "transit",
+                "ref": "gtfs:" + stops["stop_id"].astype(str),
                 "dest_key": "gtfs:" + stops["stop_id"].astype(str),
                 "name": stops["stop_name"],
                 "category": "gtfs_stop",

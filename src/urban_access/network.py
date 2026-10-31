@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import warnings
+
+import geopandas as gpd
 import pandas as pd
 from sqlalchemy import text
 
@@ -12,8 +16,60 @@ from .config import CityConfig
 def build(cfg: CityConfig) -> pd.Series:
     """Walkable segments → edges/vertices → components (sql/20_network.sql); returns stats."""
     print("[network] building walk network …", flush=True)
+    write_blocked_segments(cfg)
+    write_gated_areas(cfg)
     db.run_sql("20_network.sql", cfg)
     return stats(cfg)
+
+
+def write_blocked_segments(cfg: CityConfig) -> None:
+    """City `blocked_segments:` → <slug>.blocked_segments, read by sql/20_network.sql."""
+    rows = pd.DataFrame(
+        list(cfg.blocked_segments.items()), columns=["segment_id", "note"], dtype=str
+    )
+    with db.engine().begin() as con:
+        rows.to_sql("blocked_segments", con, schema=cfg.slug, if_exists="replace", index=False)
+        missing = (
+            con.execute(
+                text(
+                    f'SELECT b.segment_id FROM "{cfg.slug}".blocked_segments b '
+                    f'LEFT JOIN "{cfg.slug}".segments s ON s.id = b.segment_id WHERE s.id IS NULL'
+                )
+            )
+            .scalars()
+            .all()
+        )
+    for sid in missing:
+        warnings.warn(f"blocked_segments: no segment with id {sid!r}", stacklevel=2)
+
+
+def write_gated_areas(cfg: CityConfig) -> None:
+    """City `gated_areas:` GeoJSON → <slug>.gated_areas (exits = street names joined by ';')."""
+    q = f"""
+        DROP TABLE IF EXISTS "{cfg.slug}".gated_areas;
+        CREATE TABLE "{cfg.slug}".gated_areas (
+            name text PRIMARY KEY, exits text NOT NULL DEFAULT '', note text,
+            geom geometry(MultiPolygon, {cfg.analysis_epsg}) NOT NULL);
+    """
+    rows = []
+    if cfg.gated_areas_path is not None:
+        gdf = gpd.read_file(cfg.gated_areas_path).to_crs(cfg.analysis_epsg)
+        for r in gdf.itertuples():
+            exits = json.loads(r.exits) if isinstance(r.exits, str) else list(r.exits)
+            rows.append(
+                {"name": r.name, "exits": ";".join(exits), "note": r.note, "wkt": r.geometry.wkt}
+            )
+    with db.engine().begin() as con:
+        con.execute(text(q))
+        for row in rows:
+            con.execute(
+                text(
+                    f'INSERT INTO "{cfg.slug}".gated_areas (name, exits, note, geom) '
+                    f"VALUES (:name, :exits, :note, "
+                    f"ST_Multi(ST_GeomFromText(:wkt, {cfg.analysis_epsg})))"
+                ),
+                row,
+            )
 
 
 def stats(cfg: CityConfig) -> pd.Series:

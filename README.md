@@ -32,6 +32,9 @@ the bbox), buffered 2 km so services just outside still count.
 
 Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
 overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart `department_store`).
+Places checked on the ground are dropped or moved one by one (`place_overrides`, keyed by Overture id):
+for groceries, one Walmart is now a Ross store, three listed stores don't exist, and one point was moved
+to its store, which leaves 12 full-service grocery stores.
 Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
 
 ACS caveat: at block-group level the share of households without a car has a coefficient of variation
@@ -75,7 +78,10 @@ not rescaled, so other cities are comparable; a city-relative percentile is stor
 neighbourhood differences. The cost is large ACS margins of error (see The data).
 
 **Limitations.** Roads without a mapped sidewalk are treated as walkable. Access rules that apply to
-part of a segment are applied to the whole segment. Overture place categories need city-specific
+part of a segment are applied to the whole segment. Overture has no barriers (fences, gates); paths
+found blocked on the ground are removed by segment id (`blocked_segments` in the city config). Gated
+communities are drawn as polygons whose only connections are their real gates (`gated_areas`); so far two
+adjoining ones off Fairview Dr and S Saliman Rd (136 and 108 homes), each with a single exit. Overture place categories need city-specific
 corrections (see `config/cities/carson_city.yaml`). Healthcare still includes some specialist clinics
 that Overture tags as general clinics.
 

@@ -42,3 +42,23 @@ services:
   parks:
     exclude_names: ["parks and recreation department", "^nevada state parks$", "nature conservancy",
                     "air park"]
+
+# Field-checked fixes for single places, keyed by Overture place id (full id or a unique prefix of
+# at least 8 characters; `ref` in service_review.csv and service_points is the 8-character prefix).
+# drop: true removes the place from every service; lon/lat (WGS84) moves it. Applied before matching.
+place_overrides:
+  245a2ecf-041c-4e1e-ba16-8ef661b5762f: {drop: true, note: "Walmart: now a Ross store (checked 2026-10-30)"}
+  04d8348a-7589-4aee-91c0-190002195402: {drop: true, note: "Grocery Outlet: does not exist (checked 2026-10-30)"}
+  003309e4-3db9-4585-bdc8-7599b2d2650c: {drop: true, note: "Foothill Market: does not exist (checked 2026-10-30)"}
+  191f0225-ce09-4319-8c54-8b8c05813e59: {drop: true, note: "Save Mart: does not exist (checked 2026-10-30)"}
+  9bb486d2-af18-44a9-a2b2-d251aff25620: {lon: -119.754751, lat: 39.187078, note: "Sprouts Farmers Market: moved to the store (checked 2026-10-30)"}
+
+# Segments closed to walkers in reality but not in Overture (fences, locked gates), by Overture
+# segment id → note. Excluded from the walk network (walk_segments.foot_ok = false, blocked_note).
+blocked_segments:
+  46145bf6-be49-4bd7-87fa-33f45fa1c9b7: "crosswalk at the south end of Pintail Dr: fence, no access to Fairview Dr (checked 2026-10-30)"
+
+# Gated areas (GeoJSON polygons in WGS84, path relative to this folder; edit in QGIS). Every walk
+# edge crossing a boundary is removed except edges of the streets in the feature's `exits` list;
+# homes and services inside snap only to edges inside, and outside ones only to edges outside.
+gated_areas: carson_city_gated_areas.geojson

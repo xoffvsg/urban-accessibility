@@ -5,6 +5,7 @@ SET search_path = :"schema", public;
 -- 1. Walkable segments --------------------------------------------------------------------------
 -- Drop motorways. Drop a segment when a rule denies foot travel (no heading; mode absent or
 -- containing foot) and no rule allows it (allowed/designated for foot or all modes, incl. as_private).
+-- Also drop segments listed in the city's blocked_segments: (fences, gates; Overture has no barriers).
 DROP TABLE IF EXISTS walk_segments CASCADE;
 CREATE TABLE walk_segments AS
 WITH r AS (
@@ -23,8 +24,10 @@ WITH r AS (
     FROM r GROUP BY fid
 )
 SELECT s.fid, s.id AS segment_id, s.class, s.subclass, s.name, s.connectors_json,
-       NOT coalesce(f.denied AND NOT f.allowed, false) AS foot_ok, s.geom
-FROM segments s LEFT JOIN foot f USING (fid);
+       NOT coalesce(f.denied AND NOT f.allowed, false) AND b.segment_id IS NULL AS foot_ok,
+       b.note AS blocked_note, s.geom
+FROM segments s LEFT JOIN foot f USING (fid)
+LEFT JOIN blocked_segments b ON b.segment_id = s.id;
 
 -- 2. Split at connectors ------------------------------------------------------------------------
 DROP TABLE IF EXISTS edges_raw;
@@ -64,6 +67,19 @@ JOIN vertices vt ON vt.connector_id = e.t_cid
 WHERE ST_Length(e.geom) > 0;
 ALTER TABLE edges ADD PRIMARY KEY (id);
 DROP TABLE edges_raw;
+
+-- gated areas (city config): drop edges crossing a boundary unless the street is a listed exit;
+-- tag edges inside so origins/destinations snap on their own side of the fence
+DELETE FROM edges e
+USING gated_areas g, walk_segments w
+WHERE w.segment_id = e.segment_id
+  AND ST_Intersects(e.geom, ST_Boundary(g.geom))
+  AND NOT coalesce(w.name = ANY (string_to_array(g.exits, ';')), false);
+ALTER TABLE edges ADD COLUMN gated text;
+UPDATE edges e SET gated = g.name
+FROM gated_areas g WHERE ST_Intersects(g.geom, ST_LineInterpolatePoint(e.geom, 0.5));
+DELETE FROM vertices v
+WHERE NOT EXISTS (SELECT 1 FROM edges e WHERE v.id IN (e.source, e.target));
 
 -- vertex geometry: the connector point (falls back to the edge end point)
 ALTER TABLE vertices ADD COLUMN geom geometry(Point, :epsg);

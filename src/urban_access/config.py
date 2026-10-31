@@ -107,6 +107,16 @@ class ServiceRule:
 
 
 @dataclass(frozen=True)
+class PlaceOverride:
+    """A field-checked fix for one Overture place (city config `place_overrides:`)."""
+
+    drop: bool = False
+    lon: float | None = None
+    lat: float | None = None
+    note: str = ""
+
+
+@dataclass(frozen=True)
 class Scoring:
     walk_speed_m_per_min: float
     bands: tuple[tuple[float, float], ...]  # (max_m, value), ascending
@@ -117,6 +127,7 @@ class Scoring:
     dedupe_distance_m: float
     network: dict[str, float] = field(default_factory=dict)
     residential: dict[str, float] = field(default_factory=dict)
+    place_overrides: dict[str, PlaceOverride] = field(default_factory=dict)
 
     @property
     def near_m(self) -> float:
@@ -161,6 +172,8 @@ class CityConfig:
     acs_year: int
     gtfs_url: str | None
     scoring: Scoring
+    blocked_segments: dict[str, str] = field(default_factory=dict)  # segment id → note
+    gated_areas_path: Path | None = None  # GeoJSON polygons with name / exits / note
 
     @property
     def raw_dir(self) -> Path:
@@ -227,8 +240,37 @@ def _tuple(v: Any) -> tuple[str, ...]:
     return tuple(str(x) for x in v)
 
 
-def parse_scoring(raw: dict[str, Any], city_services: dict[str, Any] | None = None) -> Scoring:
-    """Build Scoring from scoring.yaml contents, merging per-city service overrides."""
+def parse_place_overrides(raw: dict[str, Any] | None) -> dict[str, PlaceOverride]:
+    """`place_overrides:` → {place id or id prefix (>= 8 chars): PlaceOverride}."""
+    out: dict[str, PlaceOverride] = {}
+    for key, v in (raw or {}).items():
+        key = str(key)
+        v = dict(v or {})
+        unknown = set(v) - {"drop", "lon", "lat", "note"}
+        if unknown:
+            raise ConfigError(f"place_overrides[{key}]: unknown keys {sorted(unknown)}")
+        if len(key) < 8:
+            raise ConfigError(f"place_overrides key must be >= 8 characters: {key!r}")
+        if ("lon" in v) != ("lat" in v):
+            raise ConfigError(f"place_overrides[{key}]: give both lon and lat")
+        o = PlaceOverride(
+            drop=bool(v.get("drop", False)),
+            lon=float(v["lon"]) if "lon" in v else None,
+            lat=float(v["lat"]) if "lat" in v else None,
+            note=str(v.get("note", "")),
+        )
+        if not o.drop and o.lon is None:
+            raise ConfigError(f"place_overrides[{key}]: needs drop: true or lon/lat")
+        out[key] = o
+    return out
+
+
+def parse_scoring(
+    raw: dict[str, Any],
+    city_services: dict[str, Any] | None = None,
+    place_overrides: dict[str, Any] | None = None,
+) -> Scoring:
+    """Build Scoring from scoring.yaml contents, merging per-city service and place overrides."""
     try:
         bands = tuple((float(b["max_m"]), float(b["value"])) for b in raw["bands"])
         weights = {k: float(v) for k, v in raw["weights"].items()}
@@ -280,6 +322,7 @@ def parse_scoring(raw: dict[str, Any], city_services: dict[str, Any] | None = No
             **RESIDENTIAL_DEFAULTS,
             **{k: float(v) for k, v in (raw.get("residential") or {}).items()},
         },
+        place_overrides=parse_place_overrides(place_overrides),
     )
 
 
@@ -317,7 +360,13 @@ def parse_city(raw: dict[str, Any], scoring_raw: dict[str, Any]) -> CityConfig:
         county_fips=census.get("county_fips", "auto"),
         acs_year=int(census["acs_year"]),
         gtfs_url=transit.get("gtfs_url"),
-        scoring=parse_scoring(scoring_raw, raw.get("services")),
+        scoring=parse_scoring(scoring_raw, raw.get("services"), raw.get("place_overrides")),
+        blocked_segments={
+            str(k): str(v or "") for k, v in (raw.get("blocked_segments") or {}).items()
+        },
+        gated_areas_path=(
+            CONFIG_DIR / "cities" / str(raw["gated_areas"]) if raw.get("gated_areas") else None
+        ),
     )
 
 

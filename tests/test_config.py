@@ -99,3 +99,19 @@ def test_explicit_crs(city_raw, scoring_raw):
     raw = copy.deepcopy(city_raw)
     raw["analysis_crs"] = "EPSG:26911"
     assert parse_city(raw, scoring_raw).analysis_epsg == 26911
+
+
+def test_blocked_segments(city_raw, scoring_raw):
+    raw = copy.deepcopy(city_raw)
+    raw.pop("blocked_segments", None)
+    assert parse_city(raw, scoring_raw).blocked_segments == {}
+    raw["blocked_segments"] = {"abc-123": "fence", "def-456": None}
+    assert parse_city(raw, scoring_raw).blocked_segments == {"abc-123": "fence", "def-456": ""}
+
+
+def test_gated_areas_path(city_raw, scoring_raw):
+    cfg = parse_city(city_raw, scoring_raw)
+    assert cfg.gated_areas_path is not None and cfg.gated_areas_path.exists()
+    raw = copy.deepcopy(city_raw)
+    raw.pop("gated_areas")
+    assert parse_city(raw, scoring_raw).gated_areas_path is None

@@ -4,9 +4,11 @@ SET search_path = :"schema", public;
 
 -- 1. Destinations ------------------------------------------------------------------------------
 -- group_key = the thing counted in n_400m (a park polygon counts once however many access points).
+-- ref = service_points.ref (Overture id prefix / gtfs:<stop_id>), the id used in service_review.csv.
 DROP TABLE IF EXISTS dests CASCADE;
 CREATE TABLE dests (
     id bigserial PRIMARY KEY,
+    ref text,
     service text NOT NULL,
     secondary boolean NOT NULL DEFAULT false,
     group_key text NOT NULL,
@@ -15,8 +17,9 @@ CREATE TABLE dests (
     geom geometry(Point, :epsg) NOT NULL
 );
 
-INSERT INTO dests (service, secondary, group_key, name, source, geom)
-SELECT s.service, s.secondary, coalesce('park:' || pk.id, s.dest_key), s.name, s.source, s.geom
+INSERT INTO dests (ref, service, secondary, group_key, name, source, geom)
+SELECT s.ref, s.service, s.secondary, coalesce('park:' || pk.id, s.dest_key), s.name, s.source,
+       s.geom
 FROM service_points s
 LEFT JOIN LATERAL (
     SELECT p.id FROM parks p
@@ -32,7 +35,7 @@ WHERE EXISTS (
     SELECT 1 FROM edges e WHERE e.main AND ST_DWithin(e.geom, d.geom, :park_access_m)
 );
 
--- 2. Snap to the nearest main edge -------------------------------------------------------------
+-- 2. Snap to the nearest main edge (same side of any gated-area boundary) ----------------------
 ALTER TABLE dests ADD COLUMN edge_id bigint, ADD COLUMN frac float8, ADD COLUMN snap_m float8,
                   ADD COLUMN node bigint;
 UPDATE dests d SET edge_id = n.id,
@@ -40,7 +43,10 @@ UPDATE dests d SET edge_id = n.id,
                    snap_m = ST_Distance(n.geom, d.geom)
 FROM dests d2
 CROSS JOIN LATERAL (
-    SELECT e.id, e.geom FROM edges e WHERE e.main ORDER BY e.geom <-> d2.geom LIMIT 1
+    SELECT e.id, e.geom FROM edges e
+    WHERE e.main AND e.gated IS NOT DISTINCT FROM (
+        SELECT g.name FROM gated_areas g WHERE ST_Intersects(g.geom, d2.geom) LIMIT 1)
+    ORDER BY e.geom <-> d2.geom LIMIT 1
 ) n
 WHERE d2.id = d.id;
 

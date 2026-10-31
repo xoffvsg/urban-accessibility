@@ -129,3 +129,53 @@ def test_dedupe_same_name_nearby_only():
 def test_normalise_name():
     assert normalise_name("Trader Joe's") == normalise_name("TRADER JOES")
     assert normalise_name(None) == ""
+
+
+def test_place_overrides_drop_and_move():
+    pl = _places(
+        [
+            ("Walmart", "grocery_store", SHOP, 0.99, "open", 0, 0),
+            ("Walmart", "grocery_store", SHOP, 0.99, "open", 3000, 0),
+            ("Sprouts", "grocery_store", SHOP, 0.99, "open", 6000, 0),
+        ]
+    )
+    pl["id"] = ["aaaaaaaa-1", "bbbbbbbb-2", "cccccccc-3"]
+    target = gpd.GeoSeries([Point(260100, 4340100)], crs=EPSG).to_crs(4326).iloc[0]
+    raw = {
+        "bands": [{"max_m": 400, "value": 1.0}],
+        "weights": {"grocery": 1.0},
+        "services": {"grocery": {"taxonomy": ["grocery_store"]}},
+    }
+    s = parse_scoring(
+        raw,
+        None,
+        {
+            "bbbbbbbb": {"drop": True, "note": "closed"},
+            "cccccccc-3": {"lon": target.x, "lat": target.y},
+        },
+    )
+    out = classify_places(pl, s, EPSG).set_index("id")
+    assert out.loc["aaaaaaaa-1", "status"] == "assigned"
+    assert out.loc["bbbbbbbb-2", "status"] == "removed"
+    assert out.loc["bbbbbbbb-2", "override"] == "closed"
+    assert out.loc["cccccccc-3", "ref"] == "cccccccc"
+    moved = gpd.GeoSeries([out.loc["cccccccc-3", "geometry"]], crs=4326).to_crs(EPSG).iloc[0]
+    assert moved.distance(Point(260100, 4340100)) < 0.01
+    # the moved Sprouts is now 141 m from the first Walmart, but has a different name: no dedupe
+    assert out.loc["cccccccc-3", "status"] == "assigned"
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"short": {"drop": True}},
+        {"aaaaaaaa": {"lon": 1.0}},
+        {"aaaaaaaa": {"note": "nothing to do"}},
+        {"aaaaaaaa": {"drop": True, "colour": "red"}},
+    ],
+)
+def test_place_overrides_validation(bad):
+    from urban_access.config import ConfigError, parse_place_overrides
+
+    with pytest.raises(ConfigError):
+        parse_place_overrides(bad)

@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+import warnings
+from collections.abc import Iterable, Mapping
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from shapely.geometry import Point
 
-from .config import Scoring, ServiceRule
+from .config import PlaceOverride, Scoring, ServiceRule
 
 CLOSED = "permanently_closed"
 
@@ -19,6 +21,9 @@ ST_CLOSED = "closed"
 ST_LOW_CONF = "low_confidence"
 ST_EXCLUDED = "excluded_name"
 ST_DUPLICATE = "duplicate"
+ST_REMOVED = "removed"  # place_overrides drop: true (field check)
+
+REF_LEN = 8  # short id shown in the review table and service_points (prefix of the Overture id)
 
 
 def _as_list(v: object) -> list[str]:
@@ -98,14 +103,45 @@ def _dedupe(cands: gpd.GeoDataFrame, metres: float, epsg: int) -> pd.Series:
     return dup
 
 
+def apply_place_overrides(
+    places: gpd.GeoDataFrame, overrides: Mapping[str, PlaceOverride]
+) -> gpd.GeoDataFrame:
+    """Copy of `places` with relocations applied and `override` (note) / `drop` columns.
+
+    Override keys are full Overture ids or unique prefixes of them. Keys that match no place
+    (e.g. after a release change) only warn; ambiguous prefixes raise.
+    """
+    out = places.copy()
+    out["override"] = ""
+    out["drop"] = False
+    ids = out["id"].astype(str)
+    for key, o in overrides.items():
+        hit = out.index[ids.str.startswith(key)]
+        if len(hit) == 0:
+            warnings.warn(f"place_overrides: no place with id {key!r}", stacklevel=2)
+            continue
+        if len(hit) > 1:
+            raise ValueError(f"place_overrides: id prefix {key!r} matches {len(hit)} places")
+        i = hit[0]
+        if o.lon is not None:
+            out.loc[i, "geometry"] = (
+                gpd.GeoSeries([Point(o.lon, o.lat)], crs=4326).to_crs(out.crs).iloc[0]
+            )
+        out.loc[i, "override"] = o.note or ("drop" if o.drop else "moved")
+        out.loc[i, "drop"] = o.drop
+    return out
+
+
 def classify_places(places: gpd.GeoDataFrame, scoring: Scoring, epsg: int) -> gpd.GeoDataFrame:
     """Return one row per (place, service) candidate with `rule` and `status` columns.
 
     Expects columns: id, name, confidence, operating_status, taxonomy_primary,
     taxonomy_hierarchy, taxonomy_alternates, geometry. Secondary groups (e.g. convenience)
     get `service` = group name and `secondary` = True. Use `status == "assigned"` for the
-    final service set; the other statuses exist for the review table.
+    final service set; the other statuses exist for the review table. City `place_overrides`
+    move places or mark them `removed`; `ref` is a short id shared with service_points.
     """
+    places = apply_place_overrides(places, scoring.place_overrides)
     rows = []
     for idx, row in places.iterrows():
         for rule in scoring.services.values():
@@ -128,7 +164,8 @@ def classify_places(places: gpd.GeoDataFrame, scoring: Scoring, epsg: int) -> gp
 
     cols = ["service", "secondary", "rule", "status"]
     if not rows:
-        out = places.iloc[0:0].copy()
+        out = places.iloc[0:0].drop(columns="drop")
+        out.insert(0, "ref", pd.Series(dtype=object))
         for c in cols:
             out[c] = pd.Series(dtype=object)
         return out
@@ -137,6 +174,9 @@ def classify_places(places: gpd.GeoDataFrame, scoring: Scoring, epsg: int) -> gp
     out = places.loc[hits["_idx"]].reset_index(drop=True)
     out[cols] = hits[cols].to_numpy()
     out["secondary"] = out["secondary"].astype(bool)
+    out.insert(0, "ref", out["id"].astype(str).str[:REF_LEN])
+    out.loc[out["drop"].astype(bool), "status"] = ST_REMOVED
+    out = out.drop(columns="drop")
     out["name_norm"] = out["name"].map(normalise_name)
     out = out.sort_values(["service", "confidence"], ascending=[True, False], kind="stable")
 
