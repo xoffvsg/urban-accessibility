@@ -85,7 +85,13 @@ python -m ipykernel install --user --name urban-access
   `libgdal` meta-package does *not* include the Parquet plugin). Before any `ogr2ogr` load, check
   `ogr2ogr --formats | grep -E "Parquet|PostgreSQL"` prints both; if not, ask the user to run
   `conda env update -f environment.yml --prune`. Never fall back to another GDAL install.
-- tippecanoe ≥ 2.17 writes `.pmtiles` directly; no separate `pmtiles` CLI is required.
+- tippecanoe ≥ 2.17 writes `.pmtiles` directly; no separate `pmtiles` CLI is required. Keep `-r1` in
+  `export.write_tiles`: without it, tippecanoe drops most service points at low zooms.
+- Browser testing: Playwright (conda `playwright` + `nodejs`) with headless Chromium in
+  `~/.cache/ms-playwright` (`playwright install chromium`; Ubuntu needed `sudo apt-get install libnss3
+  libnspr4 libasound2t64`). Node finds the library only with
+  `NODE_PATH=~/miniforge3/envs/urban-access/lib/node_modules`. `scripts/check_map.js` checks the page
+  served by `make serve` and writes screenshots.
 - Local map preview: `rangehttpserver` (pip, in `environment.yml`) → `cd docs && python -m RangeHTTPServer 8000`.
   It has no `--directory` option, so it must run from inside `docs/`. The web page reads only static files
   (PMTiles + JSON); no database driver or app server is involved at view time.
