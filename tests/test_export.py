@@ -70,6 +70,7 @@ def test_block_group_properties_and_crs():
     f = _feats()
     assert f.crs.to_epsg() == 4326
     assert "heavy_column" not in f and "pop_65plus" not in f
+    assert "grocery_n_400m" not in f and "people_per_grocery" not in f  # not shown in the popup
     assert {f"{s}_score" for s in SVC} <= set(f.columns)
     assert f.loc[0, "label"] == "Neighborhood 1-1"  # no names given: default
     assert f.loc[0, "census_label"] == "Census block group 1-1, Carson City"

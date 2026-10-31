@@ -160,8 +160,6 @@ def block_group_features(
         out[f"{s}_score"] = d[f"{s}_score"]
         out[f"{s}_pop_5min_pct"] = d[f"{s}_pop_5min_pct"]
         out[f"{s}_dist_centroid_m"] = d[f"{s}_dist_centroid_m"]
-    out["grocery_n_400m"] = d["grocery_n_400m"]
-    out["people_per_grocery"] = d["people_per_grocery"]
     for c in ("median_hh_income", "zero_car_hh_pct", "below_pov_pct", "pop_65plus_pct"):
         out[c] = d[c]
     out["median_hh_income_moe"] = d["median_hh_income_moe"]

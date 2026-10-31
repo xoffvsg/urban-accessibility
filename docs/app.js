@@ -260,12 +260,11 @@ function popupHtml(p) {
       ${custom ? `<span class="muted">(default weights: ${fmt(p.access_score, 1)})</span>` : ""}</div>
     <div class="muted">rank ${fmt(p.access_rank)} of ${S.block_groups.filter((r) => r.access_score !== null).length} neighborhoods (default weights)</div>
     <table>
-      <tr><th>Service</th><th>score</th><th>≤ 5 min</th><th>weight</th></tr>
+      <tr><th>Service</th><th>score</th><th title="Share of the neighborhood's residents within a 400 m walk">residents ≤ 5 min</th><th>weight</th></tr>
       ${S.services.map((s) => `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${LABELS[s] || s}</td>
         <td>${fmt(p[`${s}_score`], 0)}</td><td>${fmt(p[`${s}_pop_5min_pct`], 0)} %</td><td>${fmt(100 * w[s], 0)} %</td></tr>`).join("")}
     </table>
     <div>Residents: ${fmt(p.pop_total)} ± ${fmt(p.pop_total_moe)}</div>
-    <div>Groceries within 400 m: ${fmt(p.grocery_n_400m)}</div>
     <div>Median household income: $${fmt(p.median_hh_income)} ± ${fmt(p.median_hh_income_moe)}${warn(p.median_hh_income_uncertain)}</div>
     <div>Below 200 % of poverty line: ${fmt(p.below_pov_pct, 0)} %${warn(p.below_pov_pct_uncertain)}</div>
     <div>Households without a car: ${fmt(p.zero_car_hh_pct, 0)} %${warn(p.zero_car_hh_pct_uncertain)}</div>
