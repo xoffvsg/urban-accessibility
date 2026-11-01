@@ -82,13 +82,66 @@ function classColor(v) {
   return S.web.class_colors[i];
 }
 
+/* ---------- legend ---------- */
+/* Colour ramp with the class edges as ticks, and above it a small histogram: how many neighborhoods
+   fall in each class with the current weights. Swatches use the map's fill opacity so they match. */
+const FILL_OPACITY = 0.72;
+
+function buildLegend() {
+  const br = S.web.class_breaks, cols = S.web.class_colors, n = cols.length;
+  const tick = (b, i) => {
+    const pos = i === 0 ? "left:0" : i === n ? "right:0" : `left:${(100 * i) / n}%`;
+    return `<span class="${i === 0 ? "first" : i === n ? "last" : ""}" style="${pos}">${fmt(b)}</span>`;
+  };
+  document.getElementById("legend").innerHTML = `
+    <div class="lg-cap">Neighborhoods in each class</div>
+    <div class="lg-bars" style="grid-template-columns:repeat(${n},1fr)">${cols.map((c, i) => `
+      <div class="lg-col" data-i="${i}"><span class="lg-n"></span>
+        <span class="lg-bar" style="background:${c};opacity:${FILL_OPACITY}"></span></div>`).join("")}</div>
+    <div class="lg-ramp" style="grid-template-columns:repeat(${n},1fr)">${cols.map((c) =>
+      `<span style="background:${c};opacity:${FILL_OPACITY}"></span>`).join("")}</div>
+    <div class="lg-ticks">${br.map(tick).join("")}</div>
+    <div class="lg-ends"><span>&larr; lower access</span><span>higher access &rarr;</span></div>
+    <div class="lg-none"><span class="lg-none-sw" style="background:${S.web.no_residents_color};opacity:${FILL_OPACITY}"></span>
+      <span>No residents (not scored)<span class="lg-none-n"></span></span></div>`;
+}
+
+function updateLegend(w) {
+  const br = S.web.class_breaks, cols = S.web.class_colors;
+  const counts = cols.map(() => 0);
+  let none = 0;
+  for (const r of S.block_groups) {
+    const v = scoreOf(r, w);
+    if (v === null) { none++; continue; }
+    let i = 0;
+    while (i < cols.length - 1 && v >= br[i + 1]) i++;
+    counts[i]++;
+  }
+  const max = Math.max(1, ...counts);
+  document.querySelectorAll("#legend .lg-col").forEach((el) => {
+    const i = +el.dataset.i, c = counts[i];
+    el.querySelector(".lg-bar").style.height = c ? `${Math.max(3, (28 * c) / max)}px` : "0";
+    el.querySelector(".lg-n").textContent = c || "";
+    el.title = `Score ${fmt(br[i])}–${fmt(br[i + 1])}: ${c} neighborhood${c === 1 ? "" : "s"}`;
+  });
+  document.querySelector("#legend .lg-none-n").textContent = none ? `: ${none} neighborhood${none === 1 ? "" : "s"}` : "";
+}
+
 /* ---------- panel ---------- */
 function buildPanel() {
   document.title = `Walking access — ${S.city}`;
-  document.getElementById("title").textContent = `Walking access to essential services — ${S.city}`;
+  document.getElementById("kicker").textContent = S.city;
+  // totals from the data: neighborhoods with residents vs without (ACS population 0, grey, not scored)
+  const peopled = S.block_groups.filter((r) => r.access_score !== null);
+  const empty = S.block_groups.length - peopled.length;
+  const residents = peopled.reduce((a, r) => a + (r.pop_total || 0), 0);
   document.getElementById("subtitle").innerHTML =
-    `${S.block_groups.length} neighborhoods · Overture ${S.overture_release} · American Community Survey (ACS) 5-year ${S.acs_year}` +
-    `<br><span class="small">Neighborhoods are Census block groups, about 500–3,000 residents each.</span>`;
+    `<strong>${fmt(Math.round(residents / 10) * 10)} residents</strong> in ${peopled.length} neighborhoods` +
+    (empty ? ` <span class="muted">(+${empty} without residents, grey on the map)</span>` : "") +
+    `<span class="defn">Neighborhood = Census block group (about 500–3,000 residents).</span>`;
+  document.getElementById("dataline").innerHTML =
+    `<span>Data:</span><span>Overture Maps release ${esc(S.overture_release)}<br>` +
+    `American Community Survey 5-year ${S.acs_year - 4}–${S.acs_year}</span>`;
   const near = (s) => S.headline.find((h) => h.metric === `${s}_le_400m`);
   const rowsNear = S.services.filter(near).map((s) => {
     const h = near(s);
@@ -99,14 +152,11 @@ function buildPanel() {
   if (rowsNear.length) {
     document.getElementById("headline").innerHTML =
       `<p>Residents within a 5-minute walk (400&nbsp;m):</p>
-       <table class="near"><tr><th></th><th class="num">share</th><th class="num">residents</th></tr>${rowsNear.join("")}</table>`;
+       <table class="near"><tr><th></th><th class="num">share</th><th class="num">residents</th></tr>${rowsNear.join("")}</table>
+       <p class="muted small">Residents rounded to the nearest 10.</p>`;
   }
 
-  const lg = document.getElementById("legend");
-  const br = S.web.class_breaks;
-  lg.innerHTML = S.web.class_colors.map((c, i) =>
-    `<div class="swatch"><span style="background:${c}"></span>${br[i]}–${br[i + 1]}</div>`).join("") +
-    `<div class="none-row"><span class="none-swatch"></span>no residents (not scored)</div>`;
+  buildLegend();
 
   const wd = document.getElementById("weights");
   wd.innerHTML = S.services.map((s) => `
@@ -278,6 +328,7 @@ function update() {
   const w = normWeights();
   for (const s of S.services) document.getElementById(`p-${s}`).textContent = `${fmt(100 * w[s], 0)}\u00a0%`;
   map.setPaintProperty("bg-fill", "fill-color", colorExpr(w));
+  updateLegend(w);
   drawChart();
   if (popup && popup.isOpen() && popup._ua) popup.setHTML(popupHtml(popup._ua));
 }
@@ -288,7 +339,7 @@ function addLayers() {
                         promoteId: { block_groups: "geoid" } });
   const firstLabel = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
   map.addLayer({ id: "bg-fill", type: "fill", source: "ua", "source-layer": "block_groups",
-                 paint: { "fill-color": colorExpr(w), "fill-opacity": 0.72 } }, firstLabel);
+                 paint: { "fill-color": colorExpr(w), "fill-opacity": FILL_OPACITY } }, firstLabel);
   map.addLayer({ id: "parks", type: "fill", source: "ua", "source-layer": "parks",
                  paint: { "fill-color": "#1b7837", "fill-opacity": 0.25, "fill-outline-color": "#1b7837" } }, firstLabel);
   map.addLayer({ id: "bg-line", type: "line", source: "ua", "source-layer": "block_groups",
@@ -333,6 +384,12 @@ function addLayers() {
   map.on("mouseenter", "services", () => { map.getCanvas().style.cursor = "pointer"; });
 }
 
+/* MapLibre opens the compact attribution on load; start with only the (i) button showing. */
+function collapseAttribution() {
+  const el = map.getContainer().querySelector(".maplibregl-ctrl-attrib.maplibregl-compact");
+  if (el) el.classList.remove("maplibregl-compact-show");
+}
+
 async function main() {
   const res = await fetch(`data/${CITY}_summary.json`);
   if (!res.ok) throw new Error(`summary for "${CITY}" not found`);
@@ -350,7 +407,7 @@ async function main() {
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
   map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-right");
   buildPanel();
-  map.on("load", () => { addLayers(); update(); });
+  map.on("load", () => { addLayers(); update(); collapseAttribution(); });
 }
 
 main().catch((err) => {

@@ -14,19 +14,21 @@
 <div id="app">
   <aside id="panel">
     <header>
+      <p id="kicker" class="kicker"></p>
       <h1 id="title">Walking access to essential services</h1>
-      <p id="subtitle" class="muted"></p>
-      <p id="headline"></p>
+      <p id="subtitle"></p>
+      <div id="headline"></div>
+      <p id="dataline" class="muted"></p>
     </header>
 
-    <section>
-      <h2>Score</h2>
+    <section id="score">
+      <h2>Access score</h2>
+      <div id="legend" aria-label="Legend: access score classes and number of neighborhoods in each"></div>
       <p class="muted small">0–100 per neighborhood. For every home, we measure the walk along streets
         and paths to the nearest service of each kind. A walk of up to 400 m (5 min) earns 100 points,
         up to 800 m 60, up to 1,600 m (20 min) 30, farther 0. A neighborhood's score for a service is
         the average over its residents (homes with more residents count more); the overall score
         combines the five services with the weights below.</p>
-      <div id="legend" aria-label="Legend"></div>
     </section>
 
     <section>
