@@ -2,48 +2,58 @@
 
 🗺️ **[Live demo](https://xoffvsg.github.io/urban-accessibility/)**
 
-An interactive map that scores each of Carson City's 46 neighborhoods (Census block groups) from 0
-to 100 on how far its 62,050 residents walk, along the real street and path network, to a grocery
+An interactive map that scores Carson City's 45 populated neighborhoods (Census block groups) from 0
+to 100 on how far their 62,051 residents walk, along the real street and path network, to a grocery
 store, healthcare, a transit stop, a K-8 school and a park. Only 2.2 % of residents live within a
 5-minute walk of a full-service grocery store, and walking access is better in the lower-income
 neighborhoods than in the higher-income ones (mean score 48.7 for the lowest-income third of
-residents, 24.6 for the highest). Every service list was
-checked against public registries and field knowledge, and the whole map runs from open data as
-static files: no server, $0 per month.
+residents, 24.6 for the highest). Every service list was cross-checked against public registries,
+city GIS layers and field knowledge, and the whole map runs from open data as static files: no
+server, $0 per month.
 
-![Carson City walking-access map: neighborhoods coloured by score, service points, and the share of residents within a 5-minute walk of each service](images/headline.png)
-
+![Carson City walking-access map: neighborhoods colored by score, service points, and the share of residents within a 5-minute walk of each service](images/headline.png)
 
 ---
 
 ## The objective
 
-This project is the continuation of the work started with ([nyc-hydrant-analysis](https://github.com/xoffvsg/nyc-hydrant-analysis) and [nyc-hydrant-map](https://github.com/xoffvsg/nyc-hydrant-map) to become more familiar with modern GIS techniques.
+This project continues the work started with [nyc-hydrant-analysis](https://github.com/xoffvsg/nyc-hydrant-analysis)
+and [nyc-hydrant-map](https://github.com/xoffvsg/nyc-hydrant-map), to become more familiar with modern
+GIS techniques.
 
-This Urban Accessibility question is a pretext to try for the first time:
+The urban-accessibility question is a pretext to try, for the first time:
 - DuckDB
-- Overture data obtained from S3 servers
-- pgRouting to calculate actual distances along a path and not only relying on a buffer zone
+- Overture data read directly from S3
+- pgRouting, to measure actual distances along the walking network instead of relying on buffer zones
 - WSL2 Ubuntu
 - Claude Code as a coding agent in VS Code
 
-I chose Carson City, NV as a test case to validate the results as I am familiar with the city, which would not have been the case had I chosen a larger town unknown to me. The code uses a bounding box to define the area to investigate so it be used to evaluate other cities (untested as of now)
+I chose Carson City, NV as the test case because I know the city and could validate the results on
+the ground, which would not have been possible with a larger city unknown to me. The area is defined
+by a bounding box in a config file, so the code can be used for other cities (untested so far).
 
 ---
 
-
 ## What I learned
 
-- The quality of the Overture data was questionable and services were tagged or located incorrectly. It required to develop cross-checks against SNAP, NPPES, HRSA and NCES to confirm some places but each had its own errors (a wrong SNAP address, NPI records for closed clinics, etc.). It complicated the initial scope of this project.
-- The OSM map was either missing foot trails or had gates incorrectly flagged open. Some walking paths were initially calculated by routing them through gated communities not identified as such. 172 gates unflagged would have to be surveyed and characterized. A small number of gates and gated communities were updated/added to validate the experiment.
-- pgRouting 4.0.1 multi-source equicost returned non-minimal distances (506 m vs 453 m); a virtual super-source fixed it, verified pair by pair against Dijkstra.
-- Calculating the distances to parks by identifying them by a single point rather than by all the vertices of their polygon cut down the calculation time dramatically (485 s -> 38 s)
-- Building footprints cannot be systematically be considered as dwellings: Douglas County had 25-45 % more "homes" than households (sheds, barns).
-- All of the above makes risky an overreliance of free open source data such as Overture or OSM for mission-critical evaluations. I would not be able to validate the results made for a different city.
-- Configuring VS Code to run WSL2 Ubuntu was more involved than expected. Claude helped a lot.
-- Using Claude Code in VS Code is easy and efficient.
-
-
+- The quality of the Overture data was questionable: services were tagged or located incorrectly. I
+  had to build cross-checks against SNAP, NPPES, HRSA and NCES to confirm places, and each of these
+  sources had its own errors (a wrong SNAP address, NPI records for closed clinics, etc.). This
+  widened the initial scope of the project.
+- OpenStreetMap was missing some foot trails and had gates wrongly marked as open. Some walking routes
+  were first calculated through gated communities that weren't mapped as such. 172 gates without an
+  access tag would have to be surveyed; a few gates and gated communities were added or corrected to
+  validate the approach.
+- pgRouting 4.0.1's multi-source `equicost` returned non-minimal distances (506 m vs 453 m). A virtual
+  super-source fixed it, verified pair by pair against Dijkstra.
+- Parks have no mapped entrances, so each one is entered through artificial points every 25 m along
+  its boundary (from OSM import), plus its POIs. Adding the 11 city park polygons raised that number to 4,335 points (Long Ranch Estates and the disc golf course alone add hundreds), and counting the parks within 400 m with one search per point took 485 s. One search per park instead, from a virtual node linked to all of its points, gave identical counts in 38 s. The nearest-distance step was already fast, because it runs a single search per service from a virtual super-source.
+- Building footprints can't simply be counted as homes: in Douglas County they gave 25–45 % more
+  "homes" than households (sheds, barns). Parcel dwelling units fixed it.
+- All of the above makes relying on free open data such as Overture or OSM risky for mission-critical
+  evaluations. I could not validate the results for a city I don't know.
+- Configuring VS Code to work in WSL2 Ubuntu was more involved than expected. Claude helped a lot.
+- Using Claude Code in VS Code in Plan Mode is easy and efficient.
 
 ---
 
@@ -72,21 +82,25 @@ the bbox), buffered 2 km so services just outside still count.
 | USDA SNAP authorized retailers (cross-check) | 54 retailers | [SNAP retailer locations](https://www.fns.usda.gov/snap/retailer-locator) (live ArcGIS layer), fetched 2026-10-31 | Public domain |
 | CMS NPPES organizations (cross-check) | 732 NPIs in 5 ZIP codes, 416 geocoded inside the extent | [NPI Registry API](https://npiregistry.cms.hhs.gov/api-page), geocoded with the [Census Geocoder](https://geocoding.geo.census.gov/), fetched 2026-10-31 | Public (CMS); geocoder public domain |
 | HRSA health center sites (cross-check) | 3 sites | [data.hrsa.gov](https://data.hrsa.gov/data/download) service delivery sites | Public domain |
-| Carson City parks | 110 polygons (11 added to the parks layer) | Carson City GIS "Carson City Parks and Open Space" (2023) | No licence stated; used with attribution |
-| Carson City land use (homes) | 21,271 parcels, 24,734 dwelling units | Carson City GIS "Existing Land Use" (assessor, 2024): dwelling units and land-use category only | No licence stated; used with attribution; owner fields not used |
-| Douglas County zoning and parcels (homes) | 8,358 parcels | Douglas County GIS zoning + parcel outlines: zoning code and geometry only | No licence stated; used with attribution; owner fields not used |
+| Carson City parks | 110 polygons (11 added to the parks layer) | Carson City GIS "Carson City Parks and Open Space" (2023) | No license stated; used with attribution |
+| Carson City land use (homes) | 21,271 parcels, 24,734 dwelling units | Carson City GIS "Existing Land Use" (assessor, 2024): dwelling units and land-use category only | No license stated; used with attribution; owner fields not used |
+| Douglas County zoning and parcels (homes) | 8,358 parcels | Douglas County GIS zoning + parcel outlines: zoning code and geometry only | No license stated; used with attribution; owner fields not used |
 | JAC transit stops (GTFS) | 184 served stops | [Jump Around Carson](https://www.carsoncity.gov/government/departments-g-z/public-works/transportation/jac-jump-around-carson) feed via TransLoc | Published by Carson City |
 
-Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City name
-overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart `department_store`).
-Places checked on the ground are dropped or moved one by one (`place_overrides`, keyed by Overture id):
-for groceries, one Walmart is now a Ross store, three listed stores don't exist, and one point was moved
-to its store. A cross-check with USDA SNAP authorized retailers (`make xcheck`) confirmed 11 of those
-12 stores and found two full-service markets Overture tags as a restaurant and a butcher (Hacienda
+Services come from Overture places, matched on `taxonomy.hierarchy` (see `config/scoring.yaml`). City
+name overrides fix mis-tagged grocers (e.g. Raley's is tagged `coffee_shop`, Walmart
+`department_store`). Places checked on the ground are dropped or moved one by one (`place_overrides`,
+keyed by Overture id). Each service list was then cross-checked against an independent source
+(`make xcheck`):
+
+**Groceries.** On the ground, one Walmart is now a Ross store, three listed stores don't exist, and
+one point was moved to its store. USDA SNAP authorized retailers confirmed 11 of the remaining 12
+stores and found two full-service markets that Overture tags as a restaurant and a butcher (Hacienda
 Market and Grill, Centro Market); Kabayan Asian Multi Mart, absent from SNAP, was dropped as not
 full-service, which leaves 13 grocery stores. SNAP store types alone weren't enough: its "Grocery
 Store" type also covers a pizza chain and a meat shop, and one SNAP address was wrong.
-Healthcare was checked against the CMS NPI registry (organizations, geocoded) and HRSA health center
+
+**Healthcare** was checked against the CMS NPI registry (organizations, geocoded) and HRSA health center
 sites: a place counts when an organization with a matching name at that site has a primary-care,
 urgent-care, general-hospital or pharmacy taxonomy. That removed 4 specialists Overture tags as
 clinics or hospitals (endoscopy, cardiology, oncology, medical equipment), added 8 places Overture
@@ -96,24 +110,28 @@ A field check then removed four Carson Tahoe clinic records that have closed (th
 clinics and two physician-clinic sites, one of them added from the registry, which still lists it),
 which leaves 29 places. Sites the registry geocodes far from the Overture point (big stores) are kept
 but not confirmed; pharmacies inside a big store use the store's own point.
-Schools were checked against NCES (`make xcheck`): a school counts if it is open, not online-only,
+
+**Schools** were checked against NCES: a school counts if it is open, not online-only,
 and teaches any of grades K-8. 13 of the 14 schools first selected matched an NCES school with a K-8
 grade span, within about 100 m. The 14th, Capital Christian School, has no NCES record; Overture lists
 the same site again as Legacy Christian Academy, which NCES has as K-8, so the old name was dropped.
 Overture also missed two schools that teach K-8 grades: Grace Christian Academy (tagged
 `private_school`) and iSchool (grades 1-12, tagged `college_counseling`). That leaves 16 schools.
 Overture has no grade levels, so without NCES the private schools' grades could not be checked.
-Parks combine Overture land use with 11 Carson City GIS park polygons that Overture lacks (e.g.
+
+**Parks** combine Overture land use with 11 Carson City GIS park polygons that Overture lacks (e.g.
 Mayor's Park, Imus Park, Lone Mountain Park); the city layer covers Carson City only, so Douglas
 County parks come from Overture alone.
-Transit uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail depots.
+
+**Transit** uses GTFS, because the Overture transit places here are Greyhound stops and heritage-rail
+depots.
 
 ACS caveat: at block-group level the coefficient of variation is above 30 % in 34 of the 45 populated
 scored block groups for the share of households without a car, in 27 for the share below 200 % of the
 poverty line, and in 11 for median income. These fields are shown with their margins of error, and the
 equity results carry Monte Carlo ranges (see Findings).
 
-Analysis CRS: **EPSG:32611** (WGS 84 / UTM 11N, metres). Web layers are exported in EPSG:4326.
+Analysis CRS: **EPSG:32611** (WGS 84 / UTM 11N, meters). Web layers are exported in EPSG:4326.
 
 ---
 
@@ -124,7 +142,7 @@ bbox plus the scored block groups, buffered 2 km. TIGER block groups and ACS com
 Census API. JAC stops come from the GTFS feed.
 
 **Walk network.** All Overture road and path segments except motorways and segments where foot access is
-denied, split at Overture connectors into 36,346 undirected edges (cost = length in metres, EPSG:32611)
+denied, split at Overture connectors into 36,346 undirected edges (cost = length in meters, EPSG:32611)
 and loaded into PostGIS. Routing uses the largest connected component, which holds 98.8 % of the network
 length. pgRouting 4.0.1 computes the distances.
 
@@ -136,9 +154,10 @@ area). A parcel's units go to its main building, or are shared between its build
 several; sheds, garages and buildings on commercial or vacant parcels get none. That gives 19,836
 home buildings plus 1,578 parcels with dwelling units but no Overture footprint of their own, placed
 at the parcel (mostly small single-unit lots of about 365 m²: likely townhouses whose shared building
-is counted on a neighbouring lot, or homes newer than the footprints). Across block groups, parcel units per ACS household fall between 0.74 and
-1.75, mostly 0.9–1.3. Access is measured from every home and averaged per block group, weighted by
-population, so a block group's empty hills don't count as people without access. (Before the parcel
+is counted on a neighboring lot, or homes newer than the footprints). Across block groups, parcel
+units per ACS household fall between 0.74 and 1.75, mostly 0.9–1.3. Access is measured from every
+home and averaged per block group, weighted by population, so a block group's empty hills don't count
+as people without access. (Before the parcel
 data, homes were guessed from building footprints: in Douglas County that counted 25–45 % more homes
 than households, because sheds and barns were included.)
 
@@ -146,27 +165,34 @@ than households, because sheds and barns were included.)
 intersection, because blocks here are often 100–200 m long. The distance to the nearest service of each
 type comes from a single-source driving-distance run out of a virtual node connected to every service.
 Multi-source `equicost` in pgRouting 4.0.1 returned non-minimal distances, and the switch was verified
-against point-to-point Dijkstra (0.00 m difference on 40 random pairs). Parks are reached at any point
-of their boundary within 30 m of a path. Transit means GTFS stops.
+against independent one-to-many Dijkstra (`pgr_dijkstraCost`): all 112 of 120 random pairs that lie
+within 1,600 m match to within 10⁻¹² m. Beyond the 1,600 m search limit a distance is only an upper
+bound, which doesn't affect the scores (0 points beyond 1,600 m). Parks have no mapped entrances:
+each is entered through points every 25 m along its boundary that lie within 30 m of a path, plus its
+POIs. Transit means GTFS stops.
 
 **Scoring.** Tiered walk bands: ≤ 400 m (about 5 min) = 1.0, ≤ 800 m = 0.6, ≤ 1,600 m = 0.3, beyond = 0.
 Per service, the score is the population-weighted mean × 100. The composite `access_score` is the
 weighted sum (grocery 0.25, healthcare 0.20, transit 0.20, schools 0.20, parks 0.15). Scores are absolute,
 not rescaled, so other cities are comparable; a city-relative percentile is stored alongside.
 
-**Why block groups.** There are 46 here against roughly a dozen tracts, which is enough resolution to see
-neighbourhood differences. The cost is large ACS margins of error (see The data).
+**Why block groups.** There are 46 here (45 with residents) against roughly a dozen tracts, which is
+enough resolution to see neighborhood differences. The cost is large ACS margins of error (see The data).
 
 **Limitations.** Roads without a mapped sidewalk are treated as walkable. Access rules that apply to
 part of a segment are applied to the whole segment. Overture has no barriers (fences, gates). OSM gates
 explicitly closed to walkers (`access=no` / `foot=no`, 7 here) are applied automatically; the other
-OSM gates (most have no access tag) are not modelled. Gates checked on the ground are drawn as
+OSM gates (most have no access tag) are not modeled. Gates checked on the ground are drawn as
 lines in `carson_city_gates.geojson` (open or closed), and blocked paths are listed by segment id
-(`blocked_segments`). Gated
-communities are drawn as polygons whose only connections are their real gates (`gated_areas`); so far two
-adjoining ones off Fairview Dr and S Saliman Rd (136 and 108 homes), each with a single exit. Overture place categories need city-specific
-corrections (see `config/cities/carson_city.yaml`). Healthcare still includes some specialist clinics
-that Overture tags as general clinics.
+(`blocked_segments`). Gated communities are drawn as polygons whose only connections are their real
+gates (`gated_areas`); so far two adjoining ones off Fairview Dr and S Saliman Rd (136 and 108 homes),
+each with a single exit. Other gated communities in the city are not known, so access there is likely
+overstated. OSM fences are a reference layer only: walk edges that cross them are not cut. Overture
+place categories need city-specific corrections (see `config/cities/carson_city.yaml`). Healthcare
+places the provider registry couldn't match keep Overture's category, so a few practices that are
+probably specialists (e.g. Children's Heart Center, GI Consultants) are still counted. Park entry
+points are spaced along the whole boundary, so a fenced park with few real gates looks more reachable
+than it is.
 
 ---
 
@@ -257,17 +283,16 @@ choices are explained in the next section.
 
 ## Development environment
 
-This project was built on a Windows 10 desktop using **VS Code attached to WSL2 Ubuntu**, with a bash terminal,
-a conda environment inside Ubuntu, and PostGIS + pgRouting in a Docker container. That is not the
+This project was built on a Windows 10 desktop using **VS Code attached to WSL2 Ubuntu**, with a bash
+terminal, a conda environment inside Ubuntu, and PostGIS + pgRouting in a Docker container. That is not the
 simplest setup that would have worked, and the reasons are recorded here.
-
 
 ### Why WSL2 Ubuntu
 
 - **One Linux toolchain.** GDAL/ogr2ogr, tippecanoe, `psql`, DuckDB and Python all come from a
   single conda-forge environment (`environment.yml`) in Linux. It avoids mixing Windows and Linux
   builds, and it sidesteps an older Windows Anaconda GDAL (3.6) whose `ogr2ogr` crashes on exit.
-- **The brief asked for a bash terminal**, and bash scripts and Makefiles run unchanged in Linux.
+- **A bash terminal, by personal preference.** Bash scripts and Makefiles run unchanged in Linux.
 - **Deliberate experiment.** I had already done comparable projects without WSL
   ([nyc-hydrant-analysis](https://github.com/xoffvsg/nyc-hydrant-analysis),
   [nyc-hydrant-map](https://github.com/xoffvsg/nyc-hydrant-map) — including tippecanoe), so WSL
@@ -284,13 +309,12 @@ The project folder stays on the Windows drive (`C:\dev\PortfolioProject4\Urban_A
   own port (5436), its own data volume and its own versions, so nothing collides.
 - **Shared, but separated.** The same container serves other projects. This project only uses its own
   database (`urban_access`) and one schema per city.
-- **Same behaviour on every machine.** The desktop and the laptop run the same image, so SQL written
+- **Same behavior on every machine.** The desktop and the laptop run the same image, so SQL written
   on one runs on the other.
 
 Is a server database necessary at all? Not for the data size: Carson City fits easily in memory, and
 DuckDB alone could do most of the spatial joins. The database is justified by **pgRouting** (network
-walking distances) and by the course goal of practising a PostGIS workflow.
-
+walking distances) and by the course goal of practicing a PostGIS workflow.
 
 ### What could have been done differently
 
@@ -302,8 +326,6 @@ walking distances) and by the course goal of practising a PostGIS workflow.
 - **Define the database in the repo:** add a `docker-compose.yml` that pins the image and enables
   pgRouting, so a reader can reproduce the database with one command instead of relying on an
   existing container.
-
-
 
 ---
 
@@ -330,7 +352,6 @@ SOURCE=all` regenerates the cross-check review tables in `data/interim/<city>/`.
 
 ---
 
-
 ## Possible next steps
 
 - Check walk edges that cross OpenStreetMap fences away from any gate, with someone who knows the
@@ -339,13 +360,12 @@ SOURCE=all` regenerates the cross-check review tables in `data/interim/<city>/`.
 - Treat group quarters (ACS B26001) separately: one neighborhood's residents are probably mostly in a
   correctional or care facility, yet they're spread over homes like households.
 - Field-check the healthcare places the provider registry couldn't confirm.
+- Map real park entrances, at least for fenced parks, instead of points every 25 m along the boundary.
 - Weight transit stops by service frequency, not just distance.
 
 ---
 
-
-
 ## License
 
-Code: MIT, see [LICENSE](LICENSE). Data: each dataset's licence is listed under
+Code: MIT, see [LICENSE](LICENSE). Data: each dataset's license is listed under
 [The data](#the-data).
