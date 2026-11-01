@@ -295,7 +295,8 @@ function highlight(geoid) {
 /* ---------- popup ---------- */
 function popupHtml(p) {
   const w = normWeights();
-  const warn = (flag) => flag ? ` <span class="warn" title="Unreliable estimate: its coefficient of variation (CV, the standard error as a share of the estimate) is above ${S.web.cv_flag_pct}\u00a0%.&#10;American Community Survey (ACS) figures for small areas come from a sample and have large margins of error.">⚠</span>` : "";
+  // non-breaking space: the ⚠ always stays on the line of the value it qualifies
+  const warn = (flag) => flag ? `\u00a0<span class="warn" title="Unreliable estimate: its coefficient of variation (CV, the standard error as a share of the estimate) is above ${S.web.cv_flag_pct}\u00a0%.&#10;American Community Survey (ACS) figures for small areas come from a sample and have large margins of error.">⚠</span>` : "";
   if (!p.has_residents) {
     return `<div class="popup"><h3>${esc(p.label)}</h3><div class="muted small">${esc(p.census_label)}</div>
       <p class="muted">No residents (American Community Survey population 0): not scored.</p></div>`;
@@ -314,8 +315,8 @@ function popupHtml(p) {
       ${S.services.map((s) => `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${LABELS[s] || s}</td>
         <td>${fmt(p[`${s}_score`], 0)}</td><td>${fmt(p[`${s}_pop_5min_pct`], 0)}&nbsp;%</td><td>${fmt(100 * w[s], 0)}&nbsp;%</td></tr>`).join("")}
     </table>
-    <div>Residents: ${fmt(p.pop_total)} ± ${fmt(p.pop_total_moe)}</div>
-    <div>Median household income: $${fmt(p.median_hh_income)} ± ${fmt(p.median_hh_income_moe)}${warn(p.median_hh_income_uncertain)}</div>
+    <div>Residents: ${fmt(p.pop_total)} ±\u00a0${fmt(p.pop_total_moe)}</div>
+    <div>Median household income: $${fmt(p.median_hh_income)} ±\u00a0${fmt(p.median_hh_income_moe)}${warn(p.median_hh_income_uncertain)}</div>
     <div>Below 200 % of poverty line: ${fmt(p.below_pov_pct, 0)}&nbsp;%${warn(p.below_pov_pct_uncertain)}</div>
     <div>Households without a car: ${fmt(p.zero_car_hh_pct, 0)}&nbsp;%${warn(p.zero_car_hh_pct_uncertain)}</div>
     <div>Residents 65+: ${fmt(p.pop_65plus_pct, 0)}&nbsp;%${warn(p.pop_65plus_pct_uncertain)}</div>
