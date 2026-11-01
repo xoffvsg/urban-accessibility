@@ -23,7 +23,7 @@ ATTRIBUTION = [
     "Places: Overture Maps Foundation (CDLA-Permissive-2.0)",
     "Buildings, roads, land use: Overture Maps / OpenStreetMap contributors (ODbL)",
     "Gates and fences: © OpenStreetMap contributors (ODbL)",
-    "Block groups and ACS: US Census Bureau",
+    "Block groups and American Community Survey (ACS): US Census Bureau",
     "Transit stops: Jump Around Carson (GTFS)",
     "Service checks: NCES, USDA SNAP, CMS NPPES, HRSA, US Census Geocoder",
 ]

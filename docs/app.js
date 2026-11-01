@@ -6,8 +6,8 @@ const params = new URLSearchParams(location.search);
 const CITY = (params.get("city") || "carson_city").replace(/[^a-z0-9_]/g, "");
 const LABELS = { grocery: "Grocery", healthcare: "Healthcare", schools: "Schools (K-8)",
                  transit: "Transit stop", parks: "Parks", convenience: "Convenience store" };
-const HEADLINE_LABELS = { grocery: "a full-service grocery store", healthcare: "primary care, urgent care or a pharmacy",
-                         transit: "a transit stop", schools: "a K-8 school", parks: "a park" };
+const HEADLINE_LABELS = { grocery: "Grocery store", healthcare: "Healthcare", transit: "Transit stop",
+                         schools: "K-8 school", parks: "Park" };
 const LISA = { HH: "#d7191c", LL: "#2c7bb6" };
 
 let S, map, popup, weights = {}, enabled = {}, hovered = null;
@@ -87,18 +87,18 @@ function buildPanel() {
   document.title = `Walking access — ${S.city}`;
   document.getElementById("title").textContent = `Walking access to essential services — ${S.city}`;
   document.getElementById("subtitle").innerHTML =
-    `${S.block_groups.length} neighborhoods · Overture ${S.overture_release} · ACS 5-year ${S.acs_year}` +
+    `${S.block_groups.length} neighborhoods · Overture ${S.overture_release} · American Community Survey (ACS) 5-year ${S.acs_year}` +
     `<br><span class="small">Neighborhoods are Census block groups, about 500–3,000 residents each.</span>`;
   const near = (s) => S.headline.find((h) => h.metric === `${s}_le_400m`);
   const rowsNear = S.services.filter(near).map((s) => {
     const h = near(s);
     return `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${HEADLINE_LABELS[s] || LABELS[s] || s}</td>
-      <td class="num"><strong>${fmt(h.pct, 1)} %</strong></td>
+      <td class="num"><strong>${fmt(h.pct, 1)}&nbsp;%</strong></td>
       <td class="num muted">${fmt(Math.round(h.residents / 10) * 10)}</td></tr>`;
   });
   if (rowsNear.length) {
     document.getElementById("headline").innerHTML =
-      `<p>Residents living within a 5-minute walk (400 m) of …</p>
+      `<p>Residents within a 5-minute walk (400&nbsp;m):</p>
        <table class="near"><tr><th></th><th class="num">share</th><th class="num">residents</th></tr>${rowsNear.join("")}</table>`;
   }
 
@@ -245,10 +245,10 @@ function highlight(geoid) {
 /* ---------- popup ---------- */
 function popupHtml(p) {
   const w = normWeights();
-  const warn = (flag) => flag ? ` <span class="warn" title="ACS margin of error is large (CV > ${S.web.cv_flag_pct} %)">⚠</span>` : "";
+  const warn = (flag) => flag ? ` <span class="warn" title="Unreliable estimate: its coefficient of variation (CV, the standard error as a share of the estimate) is above ${S.web.cv_flag_pct}\u00a0%.&#10;American Community Survey (ACS) figures for small areas come from a sample and have large margins of error.">⚠</span>` : "";
   if (!p.has_residents) {
     return `<div class="popup"><h3>${esc(p.label)}</h3><div class="muted small">${esc(p.census_label)}</div>
-      <p class="muted">No residents (ACS population 0): not scored.</p></div>`;
+      <p class="muted">No residents (American Community Survey population 0): not scored.</p></div>`;
   }
   const row = Object.fromEntries(S.services.map((s) => [`${s}_score`, p[`${s}_score`]]));
   const v = scoreOf({ ...row, access_score: p.access_score }, w);
@@ -262,13 +262,13 @@ function popupHtml(p) {
     <table>
       <tr><th>Service</th><th>score</th><th title="Share of the neighborhood's residents within a 400 m walk">residents ≤ 5 min</th><th>weight</th></tr>
       ${S.services.map((s) => `<tr><td><span class="dot" style="background:${S.web.service_colors[s]}"></span>${LABELS[s] || s}</td>
-        <td>${fmt(p[`${s}_score`], 0)}</td><td>${fmt(p[`${s}_pop_5min_pct`], 0)} %</td><td>${fmt(100 * w[s], 0)} %</td></tr>`).join("")}
+        <td>${fmt(p[`${s}_score`], 0)}</td><td>${fmt(p[`${s}_pop_5min_pct`], 0)}&nbsp;%</td><td>${fmt(100 * w[s], 0)}&nbsp;%</td></tr>`).join("")}
     </table>
     <div>Residents: ${fmt(p.pop_total)} ± ${fmt(p.pop_total_moe)}</div>
     <div>Median household income: $${fmt(p.median_hh_income)} ± ${fmt(p.median_hh_income_moe)}${warn(p.median_hh_income_uncertain)}</div>
-    <div>Below 200 % of poverty line: ${fmt(p.below_pov_pct, 0)} %${warn(p.below_pov_pct_uncertain)}</div>
-    <div>Households without a car: ${fmt(p.zero_car_hh_pct, 0)} %${warn(p.zero_car_hh_pct_uncertain)}</div>
-    <div>Residents 65+: ${fmt(p.pop_65plus_pct, 0)} %${warn(p.pop_65plus_pct_uncertain)}</div>
+    <div>Below 200 % of poverty line: ${fmt(p.below_pov_pct, 0)}&nbsp;%${warn(p.below_pov_pct_uncertain)}</div>
+    <div>Households without a car: ${fmt(p.zero_car_hh_pct, 0)}&nbsp;%${warn(p.zero_car_hh_pct_uncertain)}</div>
+    <div>Residents 65+: ${fmt(p.pop_65plus_pct, 0)}&nbsp;%${warn(p.pop_65plus_pct_uncertain)}</div>
     ${p.lisa_cluster && p.lisa_cluster !== "ns" ? `<div class="muted">Cluster: ${p.lisa_cluster === "LL" ? "low" : p.lisa_cluster === "HH" ? "high" : p.lisa_cluster} access (LISA)</div>` : ""}
   </div>`;
 }
@@ -276,7 +276,7 @@ function popupHtml(p) {
 /* ---------- map ---------- */
 function update() {
   const w = normWeights();
-  for (const s of S.services) document.getElementById(`p-${s}`).textContent = `${fmt(100 * w[s], 0)} %`;
+  for (const s of S.services) document.getElementById(`p-${s}`).textContent = `${fmt(100 * w[s], 0)}\u00a0%`;
   map.setPaintProperty("bg-fill", "fill-color", colorExpr(w));
   drawChart();
   if (popup && popup.isOpen() && popup._ua) popup.setHTML(popupHtml(popup._ua));

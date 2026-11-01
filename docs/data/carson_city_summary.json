@@ -79,7 +79,7 @@
   "Places: Overture Maps Foundation (CDLA-Permissive-2.0)",
   "Buildings, roads, land use: Overture Maps / OpenStreetMap contributors (ODbL)",
   "Gates and fences: \u00a9 OpenStreetMap contributors (ODbL)",
-  "Block groups and ACS: US Census Bureau",
+  "Block groups and American Community Survey (ACS): US Census Bureau",
   "Transit stops: Jump Around Carson (GTFS)",
   "Service checks: NCES, USDA SNAP, CMS NPPES, HRSA, US Census Geocoder",
   "Some park areas: Carson City GIS",
@@ -3708,5 +3708,5 @@
    ]
   }
  ],
- "created_utc": "2026-10-31T23:38:06+00:00"
+ "created_utc": "2026-11-01T00:12:17+00:00"
 }
