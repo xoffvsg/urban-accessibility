@@ -98,7 +98,10 @@ python -m ipykernel install --user --name urban-access
   `~/.cache/ms-playwright` (`playwright install chromium`; Ubuntu needed `sudo apt-get install libnss3
   libnspr4 libasound2t64`). Node finds the library only with
   `NODE_PATH=~/miniforge3/envs/urban-access/lib/node_modules`. `scripts/check_map.js` checks the page
-  served by `make serve` and writes screenshots.
+  served by `make serve` (or `PORT=…`, or the live site with `URL=…`) and writes screenshots; run
+  Claude's checks on port 8010 so the user's `make serve` on 8000 is left alone.
+  `scripts/screenshot.js` writes the README image `images/headline.png` (from `URL` or a local port);
+  `python scripts/readme_table.py` prints the README Findings top/bottom table.
 - Local map preview: `rangehttpserver` (pip, in `environment.yml`) → `cd docs && python -m RangeHTTPServer 8000`.
   It has no `--directory` option, so it must run from inside `docs/`. The web page reads only static files
   (PMTiles + JSON); no database driver or app server is involved at view time.

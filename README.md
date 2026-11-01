@@ -1,10 +1,49 @@
 # Walking Access to Essential Services — Carson City, NV
 
-🗺️ **[Live demo](https://xoffvsg.github.io/urban-accessibility/)** *(not yet deployed)*
+🗺️ **[Live demo](https://xoffvsg.github.io/urban-accessibility/)**
 
-<!-- TODO (Phase 4): one-paragraph intro — what this is, what it does, why it matters. 3–4 sentences, specific. -->
+An interactive map that scores each of Carson City's 46 neighborhoods (Census block groups) from 0
+to 100 on how far its 62,050 residents walk, along the real street and path network, to a grocery
+store, healthcare, a transit stop, a K-8 school and a park. Only 2.2 % of residents live within a
+5-minute walk of a full-service grocery store, and walking access is better in the lower-income
+neighborhoods than in the higher-income ones (mean score 48.7 for the lowest-income third of
+residents, 24.6 for the highest). Every service list was
+checked against public registries and field knowledge, and the whole map runs from open data as
+static files: no server, $0 per month.
 
-<!-- TODO (Phase 4): ![Screenshot showing the headline finding](images/headline.png) -->
+![Carson City walking-access map: neighborhoods coloured by score, service points, and the share of residents within a 5-minute walk of each service](images/headline.png)
+
+
+---
+
+## The objective
+
+This project is the continuation of the work started with ([nyc-hydrant-analysis](https://github.com/xoffvsg/nyc-hydrant-analysis) and [nyc-hydrant-map](https://github.com/xoffvsg/nyc-hydrant-map) to become more familiar with modern GIS techniques.
+
+This Urban Accessibility question is a pretext to try for the first time:
+- DuckDB
+- Overture data obtained from S3 servers
+- pgRouting to calculate actual distances along a path and not only relying on a buffer zone
+- WSL2 Ubuntu
+- Claude Code as a coding agent in VS Code
+
+I chose Carson City, NV as a test case to validate the results as I am familiar with the city, which would not have been the case had I chosen a larger town unknown to me. The code uses a bounding box to define the area to investigate so it be used to evaluate other cities (untested as of now)
+
+---
+
+
+## What I learned
+
+- The quality of the Overture data was questionable and services were tagged or located incorrectly. It required to develop cross-checks against SNAP, NPPES, HRSA and NCES to confirm some places but each had its own errors (a wrong SNAP address, NPI records for closed clinics, etc.). It complicated the initial scope of this project.
+- The OSM map was either missing foot trails or had gates incorrectly flagged open. Some walking paths were initially calculated by routing them through gated communities not identified as such. 172 gates unflagged would have to be surveyed and characterized. A small number of gates and gated communities were updated/added to validate the experiment.
+- pgRouting 4.0.1 multi-source equicost returned non-minimal distances (506 m vs 453 m); a virtual super-source fixed it, verified pair by pair against Dijkstra.
+- Calculating the distances to parks by identifying them by a single point rather than by all the vertices of their polygon cut down the calculation time dramatically (485 s -> 38 s)
+- Building footprints cannot be systematically be considered as dwellings: Douglas County had 25-45 % more "homes" than households (sheds, barns).
+- All of the above makes risky an overreliance of free open source data such as Overture or OSM for mission-critical evaluations. I would not be able to validate the results made for a different city.
+- Configuring VS Code to run WSL2 Ubuntu was more involved than expected. Claude helped a lot.
+- Using Claude Code in VS Code is easy and efficient.
+
+
 
 ---
 
@@ -133,8 +172,29 @@ that Overture tags as general clinics.
 
 ## Findings
 
-<!-- Draft from notebooks/06_equity_analysis.ipynb (numbers regenerate with `make equity`).
-     TODO (Phase 4): headline sentence for the intro, top/bottom table, screenshot. -->
+**Few residents can walk to a grocery store in 5 minutes, and access runs opposite to income: the
+central neighborhoods score highest, the south of Carson City and the Douglas County neighborhoods
+lowest.**
+
+<!-- Numbers come from notebooks/05–06 (`make equity`); the table from `python scripts/readme_table.py`. -->
+
+| Rank | Neighborhood | Census block group | Access score | Residents | Grocery ≤ 5 min |
+|---:|---|---|---:|---:|---:|
+| 1 | Capitol Complex area | 1-1 | 62.9 | 1,002 | 7 % |
+| 2 | Airport Rd / Lincoln Hwy | 10.01-2 | 62.3 | 2,024 | 13 % |
+| 3 | Treadway Park area | 2-3 | 61.2 | 916 | 0 % |
+| 4 | Fulstone Family Park area | 5.02-3 | 61.0 | 1,755 | 28 % |
+| 5 | E William St / E Long St | 5.02-2 | 58.2 | 749 | 6 % |
+| … | | | | | |
+| 41 | South Sunridge Park area | 21-1 | 9.8 | 1,954 | 0 % |
+| 42 | Johnson Ln / Vicky Ln | 22-4 | 8.2 | 1,265 | 0 % |
+| 43 | Stephanie Way | 22-5 | 7.6 | 1,334 | 0 % |
+| 44 | Silver Saddle Ranch area | 8-3 | 6.4 | 3,054 | 0 % |
+| 45 | Johnson Lane Park area | 22-1 | 6.1 | 1,214 | 0 % |
+
+Scores use the default weights (grocery 25 %, healthcare 20 %, transit 20 %, schools 20 %, parks
+15 %); "Grocery ≤ 5 min" is the share of the neighborhood's residents within 400 m of a full-service
+grocery store.
 
 All numbers are for the 62,051 residents of the 45 populated scored block groups. Ranges in brackets
 are the 5th–95th percentiles of 1,000 Monte Carlo draws from the ACS margins of error.
@@ -170,8 +230,28 @@ group's homes like everyone else.
 
 ## Tech stack
 
-<!-- TODO (Phase 4): full stack list with a one-line reason per tool. The environment and
-     database choices are already documented in the next section. -->
+- **Extract: DuckDB** (`spatial` + `httpfs`). It reads Overture's GeoParquet straight from S3,
+  filtering on the bounding-box columns, so only Carson City's rows are downloaded, not a planet file.
+- **Analysis: PostGIS + pgRouting** in Docker. Routing runs in SQL next to the data: 36,000 edges,
+  21,000 homes and 4,600 service access points, one search per service or per destination group.
+  The full network rebuild with all distances takes about 2 minutes.
+- **Scoring and statistics: Python** (geopandas, pandas, esda), with pytest for the scoring rules,
+  the cross-checks and the config parser. Notebooks show each step; reusable code lives in
+  `src/urban_access/` and runs from one CLI (`make <step>`).
+- **Tiles: tippecanoe → PMTiles.** One static file (375 KB) that the browser reads with HTTP range
+  requests, so no tile server is needed.
+- **Map: MapLibre GL JS** with the `pmtiles` protocol. It's open source, renders vector data, and
+  lets the page re-weight the five services in the browser without any backend.
+- **Hosting: GitHub Pages.** The `docs/` folder is the site.
+
+**Cost: $0 per month. Servers running: none at view time** (the database is only used to build the
+files).
+
+The aim was a map anyone can open and anyone can rebuild. That ruled out a tile server or an API
+behind the map, and paid basemaps or keyed services (Mapbox, Google): the basemap is OpenFreeMap. No
+proprietary map (Google, Apple) was used as a data source either, because their terms forbid deriving
+data. Every input is open data or a public registry, cited in The data. The environment and database
+choices are explained in the next section.
 
 ---
 
@@ -181,10 +261,6 @@ This project was built on a Windows 10 desktop using **VS Code attached to WSL2 
 a conda environment inside Ubuntu, and PostGIS + pgRouting in a Docker container. That is not the
 simplest setup that would have worked, and the reasons are recorded here.
 
-A Windows 11 laptop is the second machine, synced through GitHub. It has not been set up for this
-project yet; any differences found when repeating the setup there will be added below.
-
-<!-- TODO (laptop setup): note what differed on Windows 11 / the laptop, if anything. -->
 
 ### Why WSL2 Ubuntu
 
@@ -213,40 +289,13 @@ The project folder stays on the Windows drive (`C:\dev\PortfolioProject4\Urban_A
 
 Is a server database necessary at all? Not for the data size: Carson City fits easily in memory, and
 DuckDB alone could do most of the spatial joins. The database is justified by **pgRouting** (network
-walking distances) and by the course goal of practising a PostGIS workflow. A pure-Python alternative
-would be OSMnx/NetworkX on an OpenStreetMap walk network.
+walking distances) and by the course goal of practising a PostGIS workflow.
 
-### Extra steps WSL added (one-time)
-
-| Step | Why it was needed |
-|---|---|
-| Install the VS Code **WSL** extension, then *Open a WSL Window* / `code .` from Ubuntu | VS Code runs a server inside Ubuntu |
-| Reinstall Python, Jupyter, Claude Code extensions **on the WSL side** | Extensions installed for Windows don't apply to WSL windows |
-| Install **Miniforge in Ubuntu**, create the env, select the interpreter by path | Windows conda environments aren't visible from Linux |
-| `git config core.fileMode false`, `core.autocrlf input`, `.gitattributes` with LF | Files on `/mnt/c` look executable to Linux; Windows and Linux use different line endings |
-| Set **git identity** and a **credential helper** in WSL | WSL git has its own config, separate from Windows git |
-| Install the **Claude Code CLI inside Ubuntu** (`curl -fsSL https://claude.ai/install.sh \| bash`) and add `~/.local/bin` to the PATH | A Windows install isn't visible from WSL, and the VS Code extension doesn't provide the `claude` terminal command. Reloading `~/.bashrc` afterwards drops back to `(base)`, so `conda activate urban-access` is needed again before starting `claude` |
-| Know the **Ubuntu user password** for `sudo` | Needed for `apt-get` (e.g. the `psql` client) |
-| Fix `docker ps` → *permission denied* on `docker.sock` | Docker Desktop's WSL integration plus membership of the `docker` group. Not needed for the project itself, which connects through port 5436 |
-| `playwright install chromium`, then `sudo apt-get install libnss3 libnspr4 libasound2t64` | Headless Chromium for testing the web map and the README screenshot; the browser download lives in `~/.cache/ms-playwright`, and Ubuntu lacked three system libraries it needs (on Windows the browser brings its own) |
-| Dismiss the *"workspace is on the Windows file system"* warning | The repo is on `C:` on purpose; file access from WSL is slower there |
-
-Issues that came up during setup but **were not caused by WSL** (they'd happen on Windows too):
-`psql` waiting at `(END)` (pager; use `-P pager=off`), `load_dotenv()` failing from a heredoc script
-(pass an explicit `.env` path), DuckDB 2.0 removing `.fetchone()` on relations, and pgRouting 4 removing
-`pgr_createTopology` and related functions. Another one: a process started by VS Code (here the Claude
-Code extension) can have the env's `bin/` on its PATH without `conda activate` having run. Then conda's
-activation scripts don't set `PROJ_DATA`, and pyogrio/GDAL print `PROJ: proj_create_from_database: Open
-of …/share/proj failed`. The package sets `PROJ_DATA` from `sys.prefix` when it's missing
-(`src/urban_access/__init__.py`). And one more: conda-forge's `gdal` package installs only
-`libgdal-core`, which has neither the Parquet nor the PostgreSQL driver, so `ogr2ogr file.parquet PG:…`
-failed until the `libgdal-arrow-parquet` and `libgdal-pg` plugins were added to `environment.yml`.
 
 ### What could have been done differently
 
 - **Windows-native, as in my earlier projects:** a Windows conda environment, VS Code with Git Bash,
-  and the same Docker container. That avoids every step in the table above; tippecanoe can run as it
-  did in nyc-hydrant-map.
+  and the same Docker container. Tippecanoe can run as it did in nyc-hydrant-map.
 - **Hybrid:** stay on Windows and use WSL only for a single command (e.g. `wsl tippecanoe …`).
 - **All-Linux:** keep the repo in the Linux filesystem (`~/dev/...`) for faster I/O, at the cost of
   Windows tools reaching it through `\\wsl$\Ubuntu\...`.
@@ -254,18 +303,18 @@ failed until the `libgdal-arrow-parquet` and `libgdal-pg` plugins were added to 
   pgRouting, so a reader can reproduce the database with one command instead of relying on an
   existing container.
 
-<!-- TODO (end of project): add a verdict on the experiment — did WSL pay off in daily use? -->
+
 
 ---
 
 ## How to reproduce
 
-<!-- TODO (Phase 4): three commands or fewer. Full environment steps are in SETUP.md. -->
-
-Requires: Windows with WSL2 Ubuntu (or any Linux/macOS), conda (Miniforge), and a PostgreSQL server with
-PostGIS and pgRouting (Docker `kartoza/postgis` used here). See [SETUP.md](SETUP.md).
+Requires: Windows with WSL2 Ubuntu (or any Linux/macOS), conda (Miniforge), a PostgreSQL server with
+PostGIS and pgRouting (Docker `kartoza/postgis` used here), and a free Census API key in `.env`. See
+[SETUP.md](SETUP.md).
 
 ```bash
+git clone https://github.com/xoffvsg/urban-accessibility.git && cd urban-accessibility
 conda env create -f environment.yml && conda activate urban-access   # once; then fill .env
 make all CITY=carson_city      # extract → network + scores → equity → docs/data/*.pmtiles
 make serve                     # http://localhost:8000
@@ -274,20 +323,29 @@ make serve                     # http://localhost:8000
 RangeHTTPServer is used instead of `python -m http.server` because PMTiles reads byte ranges of the
 tile file, which the built-in server does not support.
 
----
-
-## What I learned
-
-<!-- TODO (end of project): written by me, in first person. -->
-
----
-
-## Author
-
-<!-- TODO -->
+`make all` fetches some sources live (USDA SNAP retailers, OpenStreetMap barriers, the counties'
+parcel layers), so a rebuild can differ slightly from the published map. Overture releases also expire
+from S3 after a few months; the cached raw files in `data/raw/` are the record. `make xcheck
+SOURCE=all` regenerates the cross-check review tables in `data/interim/<city>/`.
 
 ---
+
+
+## Possible next steps
+
+- Check walk edges that cross OpenStreetMap fences away from any gate, with someone who knows the
+  ground; fences and gated entries are the network's biggest unknown.
+- Run a second city from a new config file, to prove the pipeline is portable.
+- Treat group quarters (ACS B26001) separately: one neighborhood's residents are probably mostly in a
+  correctional or care facility, yet they're spread over homes like households.
+- Field-check the healthcare places the provider registry couldn't confirm.
+- Weight transit stops by service frequency, not just distance.
+
+---
+
+
 
 ## License
 
-<!-- TODO: MIT for code; data licenses listed under "The data". -->
+Code: MIT, see [LICENSE](LICENSE). Data: each dataset's licence is listed under
+[The data](#the-data).

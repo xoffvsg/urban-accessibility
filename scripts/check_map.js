@@ -1,4 +1,5 @@
-// Headless check of docs/ served at http://localhost:$PORT (default 8000; make serve, in another terminal).
+// Headless check of the map: $URL if set (e.g. the GitHub Pages site), else docs/ served at
+// http://localhost:$PORT (default 8000; make serve, in another terminal).
 // Run: NODE_PATH=$CONDA_PREFIX/lib/node_modules node scripts/check_map.js <out_dir>
 // Prints rendered feature counts, popup text and console errors; writes 4 screenshots to <out_dir>.
 const { chromium } = require("playwright");
@@ -11,7 +12,7 @@ const out = process.argv[2] || ".";
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));
 
-  await page.goto(`http://localhost:${process.env.PORT || 8000}/`, { waitUntil: "load" });
+  await page.goto(process.env.URL || `http://localhost:${process.env.PORT || 8000}/`, { waitUntil: "load" });
   await page.waitForFunction(() => typeof map !== "undefined" && map && map.loaded() && map.getLayer("bg-fill"), null, { timeout: 60000 });
   await page.waitForTimeout(4000);  // tiles + basemap
 
